@@ -1,0 +1,38 @@
+;WITH ee_data AS 
+(
+  SELECT data = CONVERT(XML, event_data)
+    FROM sys.fn_xe_file_target_read_file(
+   'X:\xEvent\xeventrpcCompleted*.xel', 
+   'X:\xEvent\xeventrpcCompleted*.xem', 
+   NULL, NULL
+ )
+),
+tab AS
+(
+ SELECT 
+  [object_name] = data.value('(event/data[@name="object_name"]/value)[1]','nvarchar(250)'),  
+  [timestamp] = data.value('(event/@timestamp)[1]','datetime2'),
+  [database_name] = data.value('(event/action[@name="client_app_name"]/value)[1]','nvarchar(250)'),
+  [host] = data.value('(event/action[@name="client_hostname"]/value)[1]','nvarchar(400)'),
+  [app_name] = data.value('(event/action[@name="client_app_name"]/value)[1]','nvarchar(400)'),
+  [username] = data.value('(event/action[@name="username"]/value)[1]','nvarchar(400)'),
+  [task_time] = data.value('(event/action[@name="task_time"]/value)[1]','decimal(12,0)')  
+ FROM ee_data
+)
+SELECT 
+--* from tab
+	DISTINCT 
+		[host],
+		[database_name],
+		[app_name], 
+		[username], 
+		[object_name],		
+		MAX([timestamp]) as last_executed,
+		MAX([task_time]) as max_tastk_time_execution,
+		AVG([task_time]) as avg_tastk_time_execution,
+		COUNT([object_name]) as executions		
+  FROM tab 
+  
+  GROUP BY 
+	[host],[database_name], app_name, username, [object_name];
+	

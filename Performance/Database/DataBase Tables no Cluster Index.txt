@@ -1,0 +1,6 @@
+-- Buscar tablas sin índice cluster en base de datos
+SELECT OBJECT_NAME(OBJECT_ID) as TableName
+FROM SYS.INDEXES
+WHERE INDEX_ID = 0
+AND OBJECTPROPERTY(OBJECT_ID,'IsUserTable') = 1
+ORDER BY TableName

@@ -1,0 +1,48 @@
+--insert [dbo].[aspnet_Membership] select *, %%bmk%% from [dbo].[aspnet_Membership]
+
+
+--select * from [dbo].[aspnet_Membership]
+
+
+
+
+select * from sys.objects where name like '%aspnet_Membership'
+
+select * from sys.indexes where object_id=501576825
+
+select B.row_count,A.* from sys.partitions A
+inner join sys.dm_db_partition_stats B on (A.partition_id =  b.partition_id)
+where A.object_id = 501576825
+
+--select * from sys.dm_db_partition_stats
+
+--2338062
+--2338062
+--2338057
+
+
+select * from sys.dm_tran_active_transactions  where name in ('ALTER INDEX','OnlineIndexInsertTxn')
+
+select * from  sys.dm_tran_session_transactions
+
+select * from sys.dm_tran_locks where resource_type = 'METADATA' and resource_subtype = 'INDEXSTATS'
+
+
+
+--DBCC CHECKTABLE ('dbo.aspnet_Membership')
+
+SELECT spid
+,kpid
+,login_time
+,last_batch
+,cmd
+,status
+,hostname
+,nt_username
+,loginame
+,hostprocess
+,cpu
+,memusage
+,physical_io
+FROM sys.sysprocesses
+WHERE cmd = 'KILLED/ROLLBACK'

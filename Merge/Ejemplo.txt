@@ -1,0 +1,10 @@
+The following example uses the MERGE statement to update the ProductInventory table in the AdventureWorks sample database daily, based on orders that are processed in the SalesOrderDetail table. 
+
+Using the following MERGE statement, the Quantity column of the ProductInventory table is updated by subtracting the number of orders placed each day for each product. If the number of orders for a product causes the product's inventory to drop to 0 or below, the row for that product is deleted from the ProductInventory table. This code is embedded into a stored procedure named usp_UpdateInventory.
+
+Note that the WHEN MATCHED is used twice, the statement with an additional AND clause to verify whether the OrderQTY is less than 0 which will then delete the records. The other is when there is a straight match and will reduce the OrderQTY minus the quantity in the source.
+
+The Output clause is used to return $action, Inserted.ProductID, Inserted.Quantity, Inserted.ModifiedDate, Deleted.ProductID, Deleted.Quantity, and Deleted.ModifiedDate to the Query Editor to provide a summary of the information that has changed.
+
+Note that the source table is aggregated on the ProductID column. If this is not done, more than one ProductID in the source table might match the target table and cause the MERGE statement to return an error.
+

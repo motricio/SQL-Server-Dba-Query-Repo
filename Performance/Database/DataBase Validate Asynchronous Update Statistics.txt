@@ -1,0 +1,4 @@
+SELECT name AS "Name", 
+    is_auto_update_stats_async_on AS "Asynchronous Update" 
+FROM sys.databases;
+GO

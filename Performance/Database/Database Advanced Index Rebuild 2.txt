@@ -1,0 +1,180 @@
+
+--Script Para Mantenimiento de Indices y actualizacion de Estadisticas
+--PS 2016-06-03
+--Autor: Ivan Salamanaca. 
+
+declare @DbID SysName,
+		@DbName Varchar(250),
+		@Object_Id SysName,
+		@Cmd Nvarchar(4000),	
+		@Index_Name SysName,
+		@Object_name Varchar(250),
+		@avg_fragmentation_in_percent decimal(18,8)	
+		
+Set nocount ON
+--Creo tabla para mantener estado de Indices
+IF OBJECT_ID('tempdb..#Tabla') is not null Drop Table #Tabla
+ 
+create Table #Tabla (DBName nvarchar(250),
+					object_id SysName,
+					object_name Varchar(250),
+					Index_Name Varchar(150) Null,
+					index_id Int,
+					Fill_Factor Int,
+					avg_fragmentation_in_percent decimal(18,3))
+
+--tabla Para Id, y nombre de Tabla
+IF OBJECT_ID('tempdb..#Object') is not null Drop Table #Object 
+
+	Create table #Object (object_id nvarchar(15),ObjectName nvarchar(250))
+
+
+--Selecciono Database de Usuario
+declare c_database cursor for
+		select database_id,QuoteName(Name)Name
+		from sys.databases
+		where database_id >= 5
+		order by 1 
+open c_database
+
+	fetch next from c_database
+	into @DbID,@DbName
+
+	while(@@fetch_Status =0)
+	begin
+			truncate table #Tabla
+			truncate table #Object		
+			--Inserto Object_Id,Name para cada tabla por DB
+			set @Cmd='insert	#Object
+					  select	Object_Id,Name
+					  from	'+@DbName+'.sys.tables'
+			Exec Sp_ExecuteSQL @Cmd
+
+					--Cursor para Estado de Indices por tabla
+					declare c_datos cursor for 
+						select	Object_Id
+						from	#Object	
+
+					open c_datos
+					fetch next from c_datos
+					into @Object_Id
+
+					while (@@Fetch_status = 0)
+						begin	
+							Set @Cmd ='use '+@DbName+'
+							insert #Tabla
+							SELECT	db_name(database_id) DBName,
+									object_name(ps.object_id)Object,
+									t.name Object, 
+									I.Name Index_Name,ps.index_id,i.Fill_Factor,
+									avg_fragmentation_in_percent
+							FROM	'+@DbName+'.sys.dm_db_index_physical_stats ('+@DbID+','+@Object_Id+',NULL,NULL,NULL) ps
+								inner join '+@DbName+'.sys.indexes i
+								on ps.object_id = i.object_id
+								and	ps.Index_Id = i.Index_Id
+								inner join '+@DbName+'.sys.tables t
+								on t.object_id = i.object_id
+							where i.object_id = '+@Object_Id+'
+							Order By 5'
+							Exec Sp_ExecuteSQL @Cmd
+
+						fetch next from c_datos
+						into @Object_Id	
+						End
+						Print '----->>  Selecciono Indices a Procesar en...: ' + @DbName
+					Close c_datos
+					deallocate c_datos
+
+					----------------------------------------------------------------------------------------
+					--Indices con Fragmentacion > 30,
+					--Se debe aplicar REBUILD
+					----------------------------------------------------------------------------------------
+					
+					set @Cmd =''
+						declare c_datosREBUILD cursor for
+						select	Index_Name,
+								Object_name,
+								avg_fragmentation_in_percent
+						from	#Tabla
+						where	avg_fragmentation_in_percent > 30
+							and Index_Name is not null
+						
+						open c_datosREBUILD
+						fetch next from c_datosREBUILD
+						into @Index_Name,@Object_name,@avg_fragmentation_in_percent
+							
+							while(@@fetch_status = 0)
+								BEGIN
+									SET @Cmd ='ALTER INDEX '+@Index_Name+' ON '+@DbName+'.dbo.'+QuoteName(@Object_name)+ ' REBUILD WITH (ONLINE = OFF) ;' 
+									--Exec Sp_ExecuteSQL @Cmd
+									print @cmd
+								FETCH NEXT FROM c_datosREBUILD
+								INTO @Index_Name,@Object_name,@avg_fragmentation_in_percent	
+								END
+								Print '----->> Indices Reconstruidos en DB...: ' +@DbName
+						Close c_datosREBUILD
+						deallocate c_datosREBUILD	
+
+
+					----------------------------------------------------------------------------------------
+					--Indices con Fragmentacion >=5 And  <= 30
+					--Se aplica REORGANIZE 
+					----------------------------------------------------------------------------------------
+					
+					set @Cmd =''
+						declare c_datosREORGANIZE cursor for
+						select	Index_Name,
+								Object_name,
+								avg_fragmentation_in_percent
+						from	#Tabla
+						where	avg_fragmentation_in_percent between 5 and 30
+							and Index_Name is not null
+						
+						open c_datosREORGANIZE
+						fetch next from c_datosREORGANIZE
+						into @Index_Name,@Object_name,@avg_fragmentation_in_percent
+							
+							while(@@fetch_status = 0)
+								begin
+									set @Cmd ='ALTER INDEX '+@Index_Name+' ON '+@DbName+'.dbo.'+QuoteName(@Object_name)+ ' REORGANIZE;' 
+									--Exec Sp_ExecuteSQL @Cmd
+									print @cmd
+								fetch next from c_datosREORGANIZE
+								into @Index_Name,@Object_name,@avg_fragmentation_in_percent	
+								end
+								Print ' ---->> Indices Reorganizados en DB....: ' + @DbName
+						Close c_datosREORGANIZE
+						deallocate c_datosREORGANIZE
+
+			
+						-----------------------------------------------------------------------------------------------
+						--Actualizar estadisticas Para Indices Relacionados
+						--FullScan
+						-----------------------------------------------------------------------------------------------
+						set @Cmd =''
+							declare c_datosUpdateStatic cursor for
+								select	ObjectName
+								from	#Object
+							open c_datosUpdateStatic
+							fetch next from c_datosUpdateStatic
+							into @Object_name
+
+								while(@@fetch_status = 0)
+									begin
+										--Actualizar estadisticas
+										set @Cmd =''
+										set @Cmd ='UPDATE STATISTICS '+@DbName+'.dbo.'+QUOTENAME(@Object_name)+' WITH FULLSCAN, NORECOMPUTE;'
+										--Exec Sp_ExecuteSQL @Cmd
+										--print @cmd
+									fetch next from c_datosUpdateStatic
+									into @Object_name
+									end
+									Print '  --->> Estadisticas Actualizadas en DB...: ' + @DbName
+							Close c_datosUpdateStatic
+							deallocate c_datosUpdateStatic
+						
+		fetch next from c_database
+		into @DbID,@DbName
+	end
+	Close c_database
+	deallocate c_database

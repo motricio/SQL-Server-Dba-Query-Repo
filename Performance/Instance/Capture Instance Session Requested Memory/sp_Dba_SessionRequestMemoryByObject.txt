@@ -1,0 +1,69 @@
+/*    ==Scripting Parameters==
+
+    Source Server Version : SQL Server 2012 (11.0.6020)
+    Source Database Engine Edition : Microsoft SQL Server Enterprise Edition
+    Source Database Engine Type : Standalone SQL Server
+
+    Target Server Version : SQL Server 2012
+    Target Database Engine Edition : Microsoft SQL Server Enterprise Edition
+    Target Database Engine Type : Standalone SQL Server
+*/
+
+USE [master]
+GO
+
+/****** Object:  StoredProcedure [dbo].[sp_Dba_SessionRequestMemoryByObject]    Script Date: 9/29/2017 11:07:10 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		Mauricio Rodriguez R.
+-- Create date: 2017-09-05
+-- Description:	Captura sesiones consumiendo memoria con información detallada
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_Dba_SessionRequestMemoryByObject] 
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+		INSERT INTO SessionRequestMemoryByObject
+		([session_id]
+           ,[host_name]
+           ,[database_name]
+           ,[login_time]
+           ,[login_name]
+           ,[status]
+           ,[requested_memory_mb]
+           ,[granted_memory_mb]
+           ,[used_memory_mb]
+           ,[query_cost]
+           ,[text]
+           ,[query_plan]
+           ,[Report_Date])
+	    SELECT 
+			mg.session_id, 
+			se.host_name,
+			DB_NAME(qp.dbid) database_name,
+			se.login_time,
+			se.login_name,
+			se.status,
+			mg.requested_memory_kb/1024 requested_memory_mb, 
+			mg.granted_memory_kb/1024 as granted_memory_mb, mg.used_memory_kb/1024 used_memory_mb, 
+			query_cost,
+			t.text, 
+			qp.query_plan
+			,GETDATE()
+			--null Date_Report 		
+			FROM sys.dm_exec_query_memory_grants AS mg
+			inner join sys.dm_exec_sessions as se on (mg.session_id = se.session_id)
+			CROSS APPLY sys.dm_exec_sql_text(mg.sql_handle) AS t
+			CROSS APPLY sys.dm_exec_query_plan(mg.plan_handle) AS qp
+			where mg.requested_memory_kb/1024 > 1024
+			ORDER BY requested_memory_mb DESC,login_time asc OPTION (MAXDOP 1)
+END
+GO
+
+

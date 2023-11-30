@@ -1,0 +1,14 @@
+select * from sys.dm_exec_requests
+
+--select * from sys.dm_exec_sessions
+
+
+/*consultar los eventos de espera para determinar que tipo de problemas uede tner un motor se ordena por el que tenga mayor tiempo de espera*/
+select * from sys.dm_os_wait_stats
+order by 3 desc
+
+/*indices por table*/
+sp_helpindex DEtallesEnvio
+
+/**estradisticas por indice y tabla**/
+dbcc show_statistics (DetallesEnvio, sancionescalculoneto)

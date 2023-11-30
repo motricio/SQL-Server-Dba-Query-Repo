@@ -1,0 +1,6 @@
+SELECT o.name, i.name ,o.type_desc
+FROM sys.partitions p 
+JOIN sys.objects o ON p.object_id = o.object_id 
+JOIN sys.indexes i ON p.object_id = i.object_id 
+AND p.index_id = i.index_id 
+WHERE p.hobt_id in ('72057594041532416','72057594040549376','72057594079543296')  

@@ -1,0 +1,18 @@
+SELECT 
+o.object_id [object_id],
+o.[name], o.[type], 
+i.[name], i.[index_id], f.[name]
+,o.create_date
+,o.modify_date
+,(8 * SUM(a.used_pages))/1024 AS 'Indexsize(MB)'
+FROM sys.indexes i
+INNER JOIN sys.filegroups f ON i.data_space_id = f.data_space_id
+INNER JOIN sys.all_objects o ON i.[object_id] = o.[object_id] 
+JOIN sys.partitions AS p ON p.OBJECT_ID = i.OBJECT_ID AND p.index_id = i.index_id
+JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
+WHERE i.data_space_id = f.data_space_id
+AND o.type = 'U' -- User Created Tables
+and f.[name] = 'PRIMARY'
+Group by
+o.[name], o.[type], i.[name], i.[index_id], f.[name],o.create_date,o.object_id,o.modify_date
+order by [Indexsize(MB)] DESC

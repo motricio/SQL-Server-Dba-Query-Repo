@@ -1,0 +1,4 @@
+USE TIMESHEET_DB
+SELECT sid FROM sys.sysusers WHERE name = 'CONSULTA'
+SELECT sid FROM sys.syslogins WHERE name = 'CONSULTA'
+SELECT loginname,denylogin FROM sys.syslogins WHERE name = 'CONSULTA'

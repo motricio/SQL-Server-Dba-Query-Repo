@@ -1,0 +1,20 @@
+use master;
+SELECT 
+qp.dbid,
+--t.dbid,
+mg.session_id, 
+se.host_name,
+DB_NAME(qp.dbid) database_name,
+se.login_time,
+se.login_name,
+se.status,
+mg.requested_memory_kb/1024 requested_memory_mb, 
+mg.granted_memory_kb/1024 as granted_memory_mb, mg.used_memory_kb/1024 used_memory_mb, 
+ideal_memory_kb/1024 ideal_memory_mb,
+query_cost,
+t.text, qp.query_plan 
+FROM sys.dm_exec_query_memory_grants AS mg
+inner join sys.dm_exec_sessions as se on (mg.session_id = se.session_id)
+CROSS APPLY sys.dm_exec_sql_text(mg.sql_handle) AS t
+CROSS APPLY sys.dm_exec_query_plan(mg.plan_handle) AS qp
+ORDER BY requested_memory_mb DESC,login_time asc OPTION (MAXDOP 1)

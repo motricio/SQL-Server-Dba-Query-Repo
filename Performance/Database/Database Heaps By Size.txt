@@ -1,0 +1,17 @@
+select
+ao.name,
+ao.type_desc,
+(8 * SUM(a.used_pages))/1024 AS [Size(MB)]
+--ao.*,
+--p.*
+from sys.partitions  p
+inner join sys.all_objects ao on (p.object_id = ao.object_id)
+--JOIN sys.partitions AS p ON (p.OBJECT_ID = ao.OBJECT_ID)
+-- AND p.index_id = i.index_id
+JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
+where 
+p.index_id=0
+and ao.type ='U'
+group by
+ao.name,ao.type_desc
+order by [Size(MB)] desc

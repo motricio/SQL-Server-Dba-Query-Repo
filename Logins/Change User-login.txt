@@ -1,0 +1,3 @@
+USE [DBA_TESTS_1];
+go
+sp_change_users_login 'Update_One', 'consulta_dba', 'consulta_dba';

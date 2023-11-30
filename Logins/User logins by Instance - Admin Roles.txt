@@ -1,0 +1,21 @@
+select
+	 name
+	,sysadmin
+	,securityadmin
+	,serveradmin
+	,setupadmin
+	,processadmin
+	,diskadmin
+	,dbcreator
+	,bulkadmin
+ from sys.syslogins
+--where sysadmin =1
+where 
+	sysadmin=1
+or	securityadmin=1
+or	serveradmin=1
+or	setupadmin=1
+or	processadmin=1
+or	diskadmin=1
+or	dbcreator=1
+or	bulkadmin=1

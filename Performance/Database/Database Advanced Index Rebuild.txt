@@ -1,0 +1,153 @@
+SET NOCOUNT ON;
+USE master;
+DECLARE @INDEX_PHYSICAL_STATS_OPTION AS VARCHAR(10)='SAMPLED';
+DECLARE @DB_NAME AS VARCHAR(200)='';
+DECLARE @TSQL AS NVARCHAR(4000)='';
+DECLARE @TSQL2 AS NVARCHAR(4000)='';
+DECLARE @TABLENAME AS VARCHAR(200)='';
+DECLARE @INDEXNAME AS VARCHAR(200)='';
+DECLARE @SCHEMANAME AS VARCHAR(200)='';
+DECLARE @INDEX_CNT AS INT = 0;
+DECLARE @FRAGMENTATION AS DECIMAL(10,2) = 10;
+DECLARE @AVG_FRAGMENTATION_IN_PERCENT AS DECIMAL(10,2);
+DECLARE @START_TIME AS DATETIME;
+DECLARE @END_TIME AS DATETIME;
+
+DECLARE @TBL AS TABLE
+	(
+		[DatabaseName] VARCHAR(200),
+		[TableName] VARCHAR(200),
+		[object_id] int,
+		[IndexName] VARCHAR(200),
+		[SchemaName] VARCHAR(200),
+		[index_id] int,
+		[index_type_desc] VARCHAR(200),
+		[avg_fragmentation_in_percent] decimal(20,2),
+		[avg_page_space_used_in_percent] decimal(20,2),
+		[page_count] int,
+		[record_count] int,
+		[avg_record_size_in_bytes] decimal(20,2),
+		[max_record_size_in_bytes] decimal(20,2),
+		[compressed_page_count] int
+	);
+
+ 
+DECLARE db_cursor CURSOR FOR  
+SELECT 
+name 
+FROM master.dbo.sysdatabases 
+WHERE name NOT IN ('model','tempdb','ReportServer','ReportServerTempDB')
+ 
+OPEN db_cursor  
+SET @START_TIME = GETDATE(); 
+FETCH NEXT FROM db_cursor INTO @DB_NAME   
+
+-- CURSOR FOR INDEX LIST 
+PRINT 'Time started: '+ CONVERT(varchar(24),@START_TIME,121);
+PRINT '';
+PRINT '-- Enter cursor for executing Index list: ------------------------------------------'
+WHILE @@FETCH_STATUS = 0   
+BEGIN      
+      SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+	   'SELECT 
+			DB_NAME(A.database_id)DatabaseName,
+			OBJECT_NAME(A.object_id) TableName,
+			A.object_id,
+			B.name as [IndexName],
+			D.name,
+			A.index_id,
+			A.index_type_desc,
+			A.avg_fragmentation_in_percent,
+			A.avg_page_space_used_in_percent,
+			A.page_count,
+			A.record_count,
+			A.avg_record_size_in_bytes,
+			A.max_record_size_in_bytes,
+			A.compressed_page_count
+			FROM sys.dm_db_index_physical_stats
+			--inner join sys.indexes B on (A.objec)
+			(DB_ID('''+@DB_NAME+'''), null, NULL, NULL , '''+@INDEX_PHYSICAL_STATS_OPTION+''') AS A
+			inner join sys.indexes B on (A.object_id = B.object_id) and (A.index_id = B.index_id)
+			INNER JOIN sys.objects C ON B.[object_id] = C.[object_id] 
+			INNER JOIN sys.schemas D ON C.[schema_id] = D.[schema_id] 
+			where A.index_id >0'
+				--PRINT @TSQL;
+				
+				INSERT INTO @TBL([DatabaseName],[TableName], [object_id],[IndexName],[SchemaName],[index_id], [index_type_desc],[avg_fragmentation_in_percent], [avg_page_space_used_in_percent],[page_count],
+								 [record_count],[avg_record_size_in_bytes],[max_record_size_in_bytes],[compressed_page_count])
+				EXECUTE sp_executesql @TSQL;
+ 
+       FETCH NEXT FROM db_cursor INTO @DB_NAME   
+END   
+ 
+CLOSE db_cursor   
+DEALLOCATE db_cursor
+SET @END_TIME = GETDATE();
+
+
+PRINT 'Time started: '+ CONVERT(varchar(24),@START_TIME,121);
+PRINT 'Time ended: '+ CONVERT(varchar(24),@END_TIME,121);
+PRINT 'Total Time enlapsed (secs): '+ cast(DATEDIFF(second,@START_TIME,@END_TIME) as varchar(10));
+PRINT 'Total Time enlapsed (mins): '+ cast(DATEDIFF(minute,@START_TIME,@END_TIME) as varchar(10));
+PRINT 'Total Time enlapsed (hours): '+ cast(DATEDIFF(hour,@START_TIME,@END_TIME) as varchar(10));
+PRINT '-- End cursor for executing Index list: ------------------------------------------'
+PRINT '';
+
+-- CURSOR FOR EXEC INDEX REBUILD
+PRINT '-- Enter cursor for executing Index rebuild: ------------------------------------------'
+DECLARE db_cursor_exec CURSOR FOR  
+SELECT DISTINCT 
+	[DatabaseName],[TableName],[IndexName],[SchemaName], [avg_fragmentation_in_percent]
+FROM 
+	@TBL AS A
+Where
+	avg_fragmentation_in_percent > @FRAGMENTATION 
+	--and	 [TableName]='AUDITORIAESTADO'
+--	AND [IndexName] ='_REFNAME__FK2'	
+OPEN db_cursor_exec   
+SET @START_TIME = GETDATE();
+FETCH NEXT FROM db_cursor_exec INTO @DB_NAME, @TABLENAME,@INDEXNAME,@SCHEMANAME, @AVG_FRAGMENTATION_IN_PERCENT 
+
+WHILE @@FETCH_STATUS = 0   
+BEGIN
+ PRINT 'Index for rebuild: '+@INDEXNAME;
+ PRINT 'On Database: '+@DB_NAME;
+ PRINT 'On Schema: '+@SCHEMANAME;
+ PRINT 'On Table: '+@TABLENAME;
+ PRINT 'Avg Fragmentation in percent: '+ cast(@AVG_FRAGMENTATION_IN_PERCENT as varchar(20))+'%';
+ PRINT '-- Start of Index Rebuild Script ------------------------------------------'
+ SET @TSQL2='USE [' + @DB_NAME+'];';
+		SET @TSQL2 = @TSQL2+
+	   '
+	   ALTER INDEX ['+@INDEXNAME+'] ON ['+@SCHEMANAME+'].['+@TABLENAME+'] 
+		REBUILD PARTITION = ALL WITH 
+		(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, 
+		SORT_IN_TEMPDB = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)		
+	   ';	   
+	   PRINT @TSQL2;
+	   BEGIN TRY
+	        PRINT 'Executing Index Script...'
+			EXECUTE sp_executesql @TSQL2; 
+			PRINT 'Index Script executed OK.'
+	   END TRY	
+	   BEGIN CATCH
+			PRINT 'Index Script error, verify message.'
+	        PRINT 'Error message: '+ERROR_MESSAGE() ;  
+	   END CATCH
+	   PRINT '-- End of Index Rebuild Script ------------------------------------------'
+       FETCH NEXT FROM db_cursor_exec INTO @DB_NAME, @TABLENAME,@INDEXNAME,@SCHEMANAME, @AVG_FRAGMENTATION_IN_PERCENT 
+	   SET @INDEX_CNT = @INDEX_CNT +1;
+END
+CLOSE db_cursor_exec   
+DEALLOCATE db_cursor_exec
+SET @END_TIME = GETDATE();
+PRINT '-- End cursor for executing Index list: ------------------------------------------'
+PRINT '-- End of Index Rebulid process -----------------------------------------'
+PRINT 'Time started: '+ CONVERT(varchar(24),@START_TIME,121);
+PRINT 'Time ended: '+ CONVERT(varchar(24),@END_TIME,121);
+PRINT 'Total Index count rebuilded: ' + cast(@INDEX_CNT as varchar(10));
+PRINT 'Total Time enlapsed (secs): '+ cast(DATEDIFF(second,@START_TIME,@END_TIME) as varchar(10));
+PRINT 'Total Time enlapsed (mins): '+ cast(DATEDIFF(minute,@START_TIME,@END_TIME) as varchar(10));
+PRINT 'Total Time enlapsed (hours): '+ cast(DATEDIFF(hour,@START_TIME,@END_TIME) as varchar(10));
+GO

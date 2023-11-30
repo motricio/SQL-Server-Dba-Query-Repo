@@ -1,0 +1,7 @@
+SELECT name AS "Name", 
+    is_auto_create_stats_on AS "Auto Create Stats",
+    is_auto_update_stats_on AS "Auto Update Stats",
+    is_read_only AS "Read Only" 
+FROM sys.databases
+WHERE database_ID > 4;
+GO

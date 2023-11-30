@@ -1,0 +1,87 @@
+-- Based on Microsoft recomendation
+-- https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/configure-the-max-degree-of-parallelism-server-configuration-option
+-- Mauricio Rodriguez R. 
+-- 2017-08-05
+
+DECLARE @CNT_SCHEDULER as INT;
+DECLARE @CNT_NUMA_NODES as INT;
+DECLARE @VALUE_IN_USE AS INT;
+DECLARE @TSQL AS VARCHAR(1000);
+DECLARE @FLAG_CONFIG AS BIT=0;
+
+SELECT @CNT_SCHEDULER=Count(scheduler_id)  FROM sys.dm_os_schedulers    WHERE scheduler_id < 255;  
+SELECT @CNT_NUMA_NODES = COUNT(*) from sys.dm_os_performance_counters Where object_name LIKE '%Buffer Node%' and counter_name = 'Page life expectancy';
+SELECT @VALUE_IN_USE = CAST(value_in_use AS INT) FROM SYS.CONFIGURATIONS WHERE NAME = 'max degree of parallelism';
+SET @TSQL = 
+'USE [MASTER];  
+GO   
+EXEC sp_configure ''show advanced options'', 1;  
+GO  
+RECONFIGURE WITH OVERRIDE;  
+GO  
+EXEC sp_configure ''max degree of parallelism'', 8;  
+GO  
+RECONFIGURE WITH OVERRIDE;  
+GO'
+
+-- Evaluate cases for Reconfiguration
+BEGIN
+IF		(@CNT_NUMA_NODES = 1 AND @CNT_SCHEDULER <= 8 AND @CNT_SCHEDULER <>@VALUE_IN_USE) 
+	OR  (@CNT_NUMA_NODES = 1 AND @CNT_SCHEDULER > 8 AND @VALUE_IN_USE <>8)
+	OR  (@CNT_NUMA_NODES > 1 AND @CNT_SCHEDULER <= 8 AND @CNT_SCHEDULER <>@VALUE_IN_USE)
+	OR  (@CNT_NUMA_NODES > 1 AND @CNT_SCHEDULER > 8 AND @VALUE_IN_USE <>8)
+SET @FLAG_CONFIG =1;
+END
+
+SELECT 
+'max degree of parallelism' AS CONFIGURATION,
+@VALUE_IN_USE AS VALUE_IN_USE,
+@CNT_NUMA_NODES AS CNT_NUMA_NODES,
+@CNT_SCHEDULER as CNT_SCHEDULER,
+@FLAG_CONFIG as FLAG_CONFIG,
+CASE WHEN @FLAG_CONFIG = 1 THEN 'MaxDOP Needs reconfiguration' Else 'MaxDOP OK' END AS NEED_CONFIG, 
+case when (@CNT_NUMA_NODES = 1 AND @CNT_SCHEDULER <= 8)
+-- Case #1
+-- Server with single NUMA node
+-- Less than 8 logical processors
+-- Keep MAXDOP at or below # of logical processors
+THEN 
+'USE [MASTER];  
+GO   
+EXEC sp_configure ''show advanced options'', 1;  
+GO  
+RECONFIGURE WITH OVERRIDE;  
+GO  
+EXEC sp_configure ''max degree of parallelism'', '+cast(@CNT_SCHEDULER as varchar(2))+';  
+GO  
+RECONFIGURE WITH OVERRIDE;  
+GO'
+when (@CNT_NUMA_NODES = 1 AND @CNT_SCHEDULER > 8)
+-- Case #2
+-- Server with single NUMA node
+-- Greater than 8 logical processors
+-- Keep MAXDOP at 8
+THEN @TSQL
+when (@CNT_NUMA_NODES > 1 AND @CNT_SCHEDULER <= 8)
+-- Case #3
+-- Server with multiple NUMA nodes
+-- Less than 8 logical processors per NUMA node
+-- Keep MAXDOP at or below # of logical processors per NUMA node
+THEN 
+'USE [MASTER];  
+GO   
+EXEC sp_configure ''show advanced options'', 1;  
+GO  
+RECONFIGURE WITH OVERRIDE;  
+GO  
+EXEC sp_configure ''max degree of parallelism'', '+cast(@CNT_SCHEDULER as varchar(2))+';    
+GO  
+RECONFIGURE WITH OVERRIDE;  
+GO'
+when (@CNT_NUMA_NODES > 1 AND @CNT_SCHEDULER > 8)
+-- Case #4
+-- Server with multiple NUMA nodes
+-- Greater than 8 logical processors per NUMA node
+-- Keep MAXDOP at 8
+THEN @TSQL
+END AS RECONFIGURE_SCRIPT

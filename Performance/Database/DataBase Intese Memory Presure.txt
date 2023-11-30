@@ -1,0 +1,8 @@
+SELECT * FROM SYSPROCESSES ORDER BY lastwaittype
+
+SELECT * FROM sys.dm_exec_query_resource_semaphores
+
+SELECT * FROM sys.dm_exec_query_memory_grants order by 8 desc
+
+
+dbcc inputbuffer(172)

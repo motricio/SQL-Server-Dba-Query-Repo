@@ -1,0 +1,6 @@
+exec sp_msforeachtable 'UPDATE STATISTICS ? WITH FULLSCAN'
+
+single table
+
+UPDATE STATISTICS [dbo].[TBL_TRANSACCION_INVALIDA_GIRO];
+GO

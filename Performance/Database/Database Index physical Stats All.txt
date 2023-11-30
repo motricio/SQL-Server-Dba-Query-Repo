@@ -1,0 +1,79 @@
+USE master;
+DECLARE @INDEX_PHYSICAL_STATS_OPTION AS VARCHAR(10)='SAMPLED';
+DECLARE @DB_NAME AS VARCHAR(200)='';
+DECLARE @TSQL AS NVARCHAR(4000)='';
+
+DECLARE @TBL AS TABLE
+	(
+		[DatabaseName] VARCHAR(200),
+		[TableName] VARCHAR(200),
+		[object_id] int,
+		[IndexName] VARCHAR(200),
+		[index_id] int,
+		[index_type_desc] VARCHAR(200),
+		[avg_fragmentation_in_percent] decimal(20,2),
+		[avg_page_space_used_in_percent] decimal(20,2),
+		[page_count] int,
+		[record_count] int,
+		[avg_record_size_in_bytes] decimal(20,2),
+		[max_record_size_in_bytes] decimal(20,2),
+		[compressed_page_count] int
+	);
+
+ 
+DECLARE db_cursor CURSOR FOR  
+SELECT 
+name 
+FROM master.dbo.sysdatabases 
+WHERE name NOT IN ('model','tempdb','ReportServer','ReportServerTempDB')
+ 
+OPEN db_cursor   
+FETCH NEXT FROM db_cursor INTO @DB_NAME   
+
+ 
+WHILE @@FETCH_STATUS = 0   
+BEGIN      
+      SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+	   'SELECT 
+			DB_NAME(A.database_id)DatabaseName,
+			OBJECT_NAME(A.object_id) TableName,
+			A.object_id,
+			B.name as [IndexName],
+			A.index_id,
+			A.index_type_desc,
+			A.avg_fragmentation_in_percent,
+			A.avg_page_space_used_in_percent,
+			A.page_count,
+			A.record_count,
+			A.avg_record_size_in_bytes,
+			A.max_record_size_in_bytes,
+			A.compressed_page_count
+			FROM sys.dm_db_index_physical_stats
+			--inner join sys.indexes B on (A.objec)
+			(DB_ID('''+@DB_NAME+'''), null, NULL, NULL , '''+@INDEX_PHYSICAL_STATS_OPTION+''') AS A
+			inner join sys.indexes B on (A.object_id = B.object_id) and (A.index_id = B.index_id)
+			where A.index_id >0'
+				--PRINT @TSQL;
+				
+				INSERT INTO @TBL([DatabaseName],[TableName], [object_id],[IndexName],[index_id], [index_type_desc],[avg_fragmentation_in_percent], [avg_page_space_used_in_percent],[page_count],
+								 [record_count],[avg_record_size_in_bytes],[max_record_size_in_bytes],[compressed_page_count])
+				EXECUTE sp_executesql @TSQL;
+ 
+       FETCH NEXT FROM db_cursor INTO @DB_NAME   
+END   
+ 
+CLOSE db_cursor   
+DEALLOCATE db_cursor
+
+SELECT
+	[DatabaseName],[TableName], [object_id], 
+	[IndexName],[index_id],
+	[index_type_desc],[avg_fragmentation_in_percent], [avg_page_space_used_in_percent],[page_count],
+	[record_count],[avg_record_size_in_bytes],[max_record_size_in_bytes],[compressed_page_count]
+FROM 
+	@TBL AS A
+Where
+	avg_fragmentation_in_percent > 10.0
+	order by 1,2,7 desc
+GO

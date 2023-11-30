@@ -1,0 +1,42 @@
+/*    ==Scripting Parameters==
+
+    Source Server Version : SQL Server 2012 (11.0.6020)
+    Source Database Engine Edition : Microsoft SQL Server Enterprise Edition
+    Source Database Engine Type : Standalone SQL Server
+
+    Target Server Version : SQL Server 2012
+    Target Database Engine Edition : Microsoft SQL Server Enterprise Edition
+    Target Database Engine Type : Standalone SQL Server
+*/
+
+USE [master]
+GO
+
+/****** Object:  Table [dbo].[SessionRequestMemoryByObject]    Script Date: 9/29/2017 9:49:31 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[SessionRequestMemoryByObject](
+	[session_id] [smallint] NULL,
+	[host_name] [nvarchar](128) NULL,
+	[database_name] [nvarchar](128) NULL,
+	[login_time] [datetime] NOT NULL,
+	[login_name] [nvarchar](128) NOT NULL,
+	[status] [nvarchar](30) NOT NULL,
+	[requested_memory_mb] [bigint] NULL,
+	[granted_memory_mb] [bigint] NULL,
+	[used_memory_mb] [bigint] NULL,
+	[query_cost] [float] NULL,
+	[text] [nvarchar](max) NULL,
+	[query_plan] [xml] NULL,
+	[Report_Date] [datetime] NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[SessionRequestMemoryByObject] ADD  CONSTRAINT [DF_SessionRequestMemoryByObject_Report_Date]  DEFAULT (getdate()) FOR [Report_Date]
+GO
+
+

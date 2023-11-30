@@ -1,0 +1,6 @@
+T1118 - T1117
+SQL 2014 RTM, SQL 2012 RTM
+https://support.microsoft.com/en-us/help/2964518/recommended-updates-and-configuration-options-for-sql-server-2012-and
+
+T4199 - SQL2005 -> 2016
+https://support.microsoft.com/en-us/help/974006/sql-server-query-optimizer-hotfix-trace-flag-4199-servicing-model

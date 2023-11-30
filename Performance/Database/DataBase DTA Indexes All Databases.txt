@@ -1,0 +1,91 @@
+-- For TempDB:
+-- ALTER DATABASE tempdb MODIFY FILE (NAME = 'Tempdb_12', SIZE = SIZE+1)
+-- SELECT  name, size * 8 / 1024 FROM sys.database_files;
+
+USE master;
+
+DECLARE @DB_NAME AS VARCHAR(200)='';
+DECLARE @MEMBER_OF AS VARCHAR(200)='';
+DECLARE @TSQL AS NVARCHAR(4000)='';
+
+DECLARE @TBL_USERS AS TABLE
+	(
+		[DatabaseID] int,
+		[DatabaseName] varchar(4000),
+		[User_seeks] decimal (18,1),
+		[User_scans] decimal (18,1),
+		[Avg_Estimated_Impact] decimal (18,1),
+		[Last_User_Seek] Datetime,
+		[TableName] varchar(2000),
+		[Create_Statement] varchar(4000)
+	);
+
+ 
+DECLARE db_cursor CURSOR FOR  
+SELECT 
+--top 1
+name 
+FROM master.dbo.sysdatabases 
+WHERE name NOT IN ('master','model','msdb','tempdb','ReportServer','ReportServerTempDB')
+--and name='WebAnalyticsServiceApplication_ReportingDB_8a119566-448f-48c5-807e-76776681a1a8'
+
+ 
+OPEN db_cursor   
+FETCH NEXT FROM db_cursor INTO @DB_NAME   
+
+ 
+WHILE @@FETCH_STATUS = 0   
+BEGIN      
+      SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+	   'SELECT TOP 25
+					dm_mid.database_id AS DatabaseID,
+					DB_NAME(dm_mid.database_id) AS DatabaseName,
+					dm_migs.user_seeks,dm_migs.user_scans,
+					dm_migs.avg_user_impact*(dm_migs.user_seeks+dm_migs.user_scans) Avg_Estimated_Impact,
+					dm_migs.last_user_seek AS Last_User_Seek,
+					OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) AS [TableName],
+					''CREATE INDEX [IX_'' + OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) + ''_''
+					+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.equality_columns,''''),'', '',''_''),''['',''''),'']'','''') 
+					+ CASE
+					WHEN dm_mid.equality_columns IS NOT NULL
+					AND dm_mid.inequality_columns IS NOT NULL THEN ''_''
+					ELSE ''''
+					END
+					+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.inequality_columns,''''),'', '',''_''),''['',''''),'']'','''')
+					+ '']''
+					+ '' ON '' + dm_mid.statement
+					+ '' ('' + ISNULL (dm_mid.equality_columns,'''')
+					+ CASE WHEN dm_mid.equality_columns IS NOT NULL AND dm_mid.inequality_columns 
+					IS NOT NULL THEN '','' ELSE
+					'''' END
+					+ ISNULL (dm_mid.inequality_columns, '''')
+					+ '')''
+					+ ISNULL ('' INCLUDE ('' + dm_mid.included_columns + '')'', '''') AS Create_Statement
+					FROM sys.dm_db_missing_index_groups dm_mig
+					INNER JOIN sys.dm_db_missing_index_group_stats dm_migs
+					ON dm_migs.group_handle = dm_mig.index_group_handle
+					INNER JOIN sys.dm_db_missing_index_details dm_mid
+					ON dm_mig.index_handle = dm_mid.index_handle
+					WHERE dm_mid.database_ID = DB_ID()
+					ORDER BY Avg_Estimated_Impact DESC
+				'
+				--PRINT @TSQL;
+				INSERT INTO @TBL_USERS([DatabaseID],[DatabaseName],[User_seeks],[User_scans],[Avg_Estimated_Impact],[Last_User_Seek],[TableName],[Create_Statement])
+				EXECUTE sp_executesql @TSQL;
+ 
+       FETCH NEXT FROM db_cursor INTO @DB_NAME   
+END   
+
+ 
+CLOSE db_cursor   
+DEALLOCATE db_cursor
+
+SELECT
+	[DatabaseID],[DatabaseName],
+	[User_seeks],[User_scans],[Avg_Estimated_Impact],
+	[Last_User_Seek],[TableName],[Create_Statement]
+FROM 
+	@TBL_USERS AS A
+ORDER BY [User_seeks]desc,[Avg_Estimated_Impact] DESC
+GO

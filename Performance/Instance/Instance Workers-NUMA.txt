@@ -1,0 +1,14 @@
+SELECT  
+    scheduler_id,  
+    status
+    cpu_id,  
+    current_tasks_count,  
+    runnable_tasks_count,  
+    current_workers_count,  
+    active_workers_count,  
+    work_queue_count  
+  FROM sys.dm_os_schedulers  
+  WHERE scheduler_id < 255;  
+  
+  
+select * from sys.dm_os_nodes

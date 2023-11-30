@@ -1,0 +1,33 @@
+--ALTER EVENT SESSION [xEvent_QueryBatch] ON SERVER  STATE = STOP;
+
+DROP EVENT SESSION [xEvent_QueryBatch] ON SERVER
+GO
+
+CREATE EVENT SESSION [xEvent_QueryBatch] ON SERVER 
+ADD EVENT sqlserver.rpc_completed(SET collect_statement=(1)
+    ACTION(
+			package0.collect_current_thread_id,
+			sqlos.task_elapsed_quantum,sqlos.task_time,sqlos.worker_address,sqlserver.client_app_name,sqlserver.client_hostname,sqlserver.database_id,sqlserver.database_name,sqlserver.nt_username,sqlserver.query_hash,sqlserver.server_instance_name,sqlserver.server_principal_name,sqlserver.server_principal_sid,sqlserver.session_id,sqlserver.session_nt_username,sqlserver.sql_text,sqlserver.transaction_id,sqlserver.tsql_stack,sqlserver.username)
+    WHERE (
+				[package0].[equal_uint64]([sqlserver].[database_id],(6)) 				
+				AND 
+				(
+				   [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_SHIPPING_TRACE') 
+				OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_SHIPPING_TRACE')
+				OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_POSTMAN_BAG')
+				OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_RETURN')
+				OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_SHIPPING_TRACE_DELIVERY_SUPPORT_IMAGES')
+				)
+				--OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_POSTMAN_BAG') 
+				--OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_RETURN') 
+				--OR [sqlserver].[equal_i_sql_unicode_string]([object_name],N'PROC_SPS_SHIPPING_TRACE_DELIVERY_SUPPORT_IMAGES')
+				)
+				) 
+ADD TARGET package0.event_file(SET filename=N'X:\xEvent\xeventrpcCompleted.xel',max_rollover_files=(0),metadatafile=N'X:\xEvent\xeventrpcCompleted.xem')
+WITH (MAX_MEMORY=4096 KB,EVENT_RETENTION_MODE=ALLOW_SINGLE_EVENT_LOSS,MAX_DISPATCH_LATENCY=30 SECONDS,MAX_EVENT_SIZE=0 KB,MEMORY_PARTITION_MODE=NONE,TRACK_CAUSALITY=ON,STARTUP_STATE=OFF)
+GO
+
+
+ALTER EVENT SESSION [xEvent_QueryBatch] ON SERVER
+  STATE = START;
+GO

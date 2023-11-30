@@ -1,0 +1,12 @@
+USE master;
+
+DECLARE @DBID as int;
+set @DBID=14;
+
+SELECT TOP 5 db_name(query_stats.dbid) [Database],max(last_execution_time)last_execution_time, 
+query_stats.query_hash AS "Query Hash", SUM(query_stats.total_worker_time) / SUM(query_stats.execution_count) AS "Avg CPU Time",
+ MIN(query_stats.statement_text) AS "Statement Text" ,sum(query_stats.total_logical_reads+query_stats.total_physical_reads) as "reads"
+FROM (SELECT ST.dbid,QS.*, SUBSTRING(ST.text, (QS.statement_start_offset/2) + 1, 
+((CASE statement_end_offset WHEN -1 THEN DATALENGTH(ST.text) ELSE QS.statement_end_offset END - QS.statement_start_offset)/2) + 1) AS statement_text 
+FROM sys.dm_exec_query_stats AS QS CROSS APPLY sys.dm_exec_sql_text(QS.sql_handle) as ST where ST.dbid=@DBID) as query_stats 
+GROUP BY dbid,query_stats.query_hash ORDER BY 4 DESC;  

@@ -1,0 +1,14 @@
+--USE TIMESHEET_DB
+--SELECT sid FROM sys.sysusers WHERE name = 'CONSULTA'
+SELECT COUNT(*) CNT, isntname FROM sys.syslogins
+group by isntname
+
+
+SELECT name, dbname
+--,* 
+FROM sys.syslogins
+where isntname = 0
+and name not like '%NT%'
+and name not like '%#%'
+and name not in ('sa')
+order by name

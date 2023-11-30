@@ -1,0 +1,33 @@
+SELECT TOP 25 
+ DB_NAME(bd.database_id) as DBNAME,
+ obj.[name] as [Object Name],
+ sysobj.type_desc as [Object Type],
+ i.[name]   as [Index Name],
+ i.[type_desc] as [Index Type],
+ COUNT_BIG(*) AS Buffered_Page_Count ,
+ COUNT_BIG(*) * 8192 / (1024 * 1024) as Buffer_MB,
+ bd.page_type as [Page Type] -- ,obj.name ,obj.index_id, i.[name]
+FROM sys.dm_os_buffer_descriptors AS bd 
+    INNER JOIN 
+    (
+        SELECT object_name(object_id) AS name 
+            ,index_id ,allocation_unit_id, object_id
+        FROM sys.allocation_units AS au
+            INNER JOIN sys.partitions AS p 
+                ON au.container_id = p.hobt_id 
+                    AND (au.type = 1 OR au.type = 3)
+        UNION ALL
+        SELECT object_name(object_id) AS name   
+            ,index_id, allocation_unit_id, object_id
+        FROM sys.allocation_units AS au
+            INNER JOIN sys.partitions AS p 
+                ON au.container_id = p.hobt_id 
+                    AND au.type = 2
+    ) AS obj 
+        ON bd.allocation_unit_id = obj.allocation_unit_id
+LEFT JOIN sys.indexes i on i.object_id = obj.object_id AND i.index_id = obj.index_id
+LEFT JOIN sys.objects sysobj on i.object_id = sysobj.object_id
+WHERE database_id = DB_ID()
+and sysobj.type not in ('S','IT')
+GROUP BY DB_NAME(bd.database_id), obj.name, obj.index_id , i.[name],i.[type_desc],bd.page_type,sysobj.type_desc
+ORDER BY Buffered_Page_Count DESC

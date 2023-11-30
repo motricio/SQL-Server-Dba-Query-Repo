@@ -1,0 +1,24 @@
+SET SHOWPLAN_ALL ON
+go
+
+/*
+  Query for showplan here
+*/
+select a.* from DatabaseInfo as a
+inner join Inventory.dbo.Instancia b on (a.Instance = b.Nombre)
+inner join Inventory.dbo.Cliente c on (b.IdCliente = c.Id)
+where b.Nombre='AQUAMAN\WAREHOUSE'
+go
+
+SET SHOWPLAN_ALL OFF
+go
+
+/* Same query requires
+
+SET STATISTICS TIME ON
+
+SET STATISTICS IO ON
+
+Gather information results for better query preformance understanding
+
+*/

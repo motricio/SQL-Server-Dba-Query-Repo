@@ -1,0 +1,6 @@
+select name,* from sys.syslogins
+--where sysadmin =1
+where 
+	name not like '%#%'
+and name not like '%NT%'
+and name not in ('sa')
