@@ -1,0 +1,3 @@
+USE Novasoft_Tipiel2008;
+GRANT ALTER TO [TP\cbuitrago];
+GO

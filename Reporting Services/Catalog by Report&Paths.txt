@@ -1,0 +1,16 @@
+SELECT
+[Path],
+[Name],
+[Type],
+[Property],
+[Description],
+[CreatedByID],
+[CreationDate],
+[ModifiedByID],
+[ModifiedDate],
+[Parameter]
+FROM [dbo].[Catalog]
+where 
+[Path] <>''
+--and [path] like '%AgentesComerciales'
+ORDER BY [Path]

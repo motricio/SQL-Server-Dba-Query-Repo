@@ -1,0 +1,5 @@
+Get-WmiObject –namespace root\Microsoft\SqlServer\ReportServer
+Get-WmiObject –namespace root\Microsoft\SqlServer\ReportServer  –class __Namespace –ComputerName SRVBDPRUEB2 | select Name
+
+$RSAdmin = gwmi -namespace "root/Microsoft/SqlServer/ReportServer/RS_CAPACITACION/v11/Admin" MSReportServer_ConfigurationSetting
+$RSAdmin.GenerateDatabaseUpgradeScript("ReportServer_Capacitacion","163").Script | Out-File upgradescript.sql

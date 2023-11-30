@@ -1,0 +1,19 @@
+SELECT 
+       datepart(YYYY,[TimeStart]) as [Year]
+	  ,datepart(MM,[TimeStart]) as [Month]
+	  ,datepart(DD,[TimeStart]) as [Day]
+	  ,[ItemPath]
+	  ,[Status]
+	  ,count(ExecutionId) [Sessions]
+	  ,AVG(TimeDataRetrieval) [AVG TimeDataRetrieval]
+	  ,AVG(TimeProcessing) [AVG TimeProcessings]
+	  ,AVG(TimeRendering) [AVG TimeRendering]
+  FROM [dbo].[ExecutionLog3]
+  where  [TimeStart] between '2017-05-01' and '2017-05-10'
+Group by 
+	   datepart(YYYY,[TimeStart])
+	  ,datepart(MM,[TimeStart])
+	  ,datepart(DD,[TimeStart])
+	  ,[ItemPath]
+	  ,[Status]
+order by 1,2,3

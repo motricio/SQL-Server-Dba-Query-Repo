@@ -1,0 +1,16 @@
+SELECT 
+       datepart(YYYY,[TimeStart]) as [Year]
+	  ,datepart(MM,[TimeStart]) as [Month]
+	  ,datepart(DD,[TimeStart]) as [Day]
+	  ,[InstanceName]
+	  ,[Status]
+	  ,count(ExecutionId) [Sessions]
+  FROM [dbo].[ExecutionLog3]
+  where  [TimeStart] between '2016-11-01' and '2016-11-30'
+Group by 
+	   datepart(YYYY,[TimeStart])
+	  ,datepart(MM,[TimeStart])
+	  ,datepart(DD,[TimeStart])
+	  ,[InstanceName]
+	  ,[Status]
+order by 1,2,3
