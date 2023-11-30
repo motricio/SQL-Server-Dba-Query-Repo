@@ -1,0 +1,71 @@
+
+--Verificar espacio de log
+--Diagnostico
+--Validar el valor de Log Reuse wait para determinar pasos a seguir si el log está lleno.
+USE MASTER;
+
+DECLARE @TSQL AS NVARCHAR(2000);
+SET @TSQL = ''
+CREATE TABLE #TBL
+	(
+		[DataBaseName] varchar(200),
+		[Log Size(MB)] decimal(32,6),
+		[Log Space used(%)] decimal(32,6),
+		[Status] varchar(5)
+	);
+
+SET @TSQL='dbcc sqlperf(logspace)';
+	
+INSERT INTO #TBL([DataBaseName],[Log Size(MB)],[Log Space used(%)],[Status])
+EXECUTE sp_executesql @TSQL;
+
+SELECT
+	[A].[DataBaseName],
+	[A].[Log Size(MB)],
+	[A].[Log Space used(%)],
+	[A].[Status],
+	[B].[log_reuse_wait_desc]
+FROM 
+	#TBL AS A
+	INNER JOIN sys.databases B ON (A.DataBaseName = B.name)
+order by 
+[Log Size(MB)] desc
+DROP TABLE #TBL
+GO
+
+exec xp_fixeddrives
+
+dbcc loginfo()
+
+
+--Validar transacciones activas
+DBCC OPENTRAN
+
+
+
+-- BAckup Log
+BACKUP LOG  DBASE TO DISK = 'C:\DBASE.TRN' WITH COMPRESSION
+GO
+
+-- Restore Log
+RESTORE LOG [SPOKE_Transact] FROM DISK = 'K:\BackupTemp\' WITH NORECOVERY
+GO
+
+--Verificar porcentae de Ejecución comandos:
+
+
+SELECT
+    session_id,
+    percent_complete,
+    start_time ,
+    command, 
+    b.name AS DatabaseName, --Most of the time will said Main but this is because db is not accesible
+    DATEADD(ms,estimated_completion_time,GETDATE()) AS RemainTime,
+    (estimated_completion_time/1000/60) AS MinutesToFinish,
+	Statements.text as BatchSQL
+    FROM sys.dm_exec_requests a
+    INNER JOIN sys.databases b ON a.database_id = b.database_id
+	CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS Statements
+    WHERE (command like '%ALTER INDEX%'
+    or command like '%BACKUP%' or command like '%DBCC%' or command like '%RESTORE%')
+    AND (estimated_completion_time > 0)

@@ -1,0 +1,13 @@
+select 
+b.name,
+a.synchronization_health_desc,
+a.last_received_time,
+a.database_state_desc,
+a.log_send_queue_size [log_send_queue_size (KB)],
+a.redo_queue_size [redo_queue_size (KB)], 
+a.last_commit_time,
+a.redo_rate [redo_rate (KB)/second]
+from 
+sys.dm_hadr_database_replica_states A
+inner join sys.databases B on (A.database_id = B.database_id)
+order by 1 desc

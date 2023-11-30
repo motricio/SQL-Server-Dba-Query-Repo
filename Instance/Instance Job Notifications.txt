@@ -1,0 +1,34 @@
+-- Obtener el listado de Jobs de la Instancia
+-- Actualiza cada uno Job para notificar al operador por defecto DBA1
+-- El operador DBA1 dbe estar creado y activo
+-- El servicio Databasemail debe estar configurado y activo
+
+USE msdb;
+
+DECLARE @JOB_NAME AS VARCHAR(50)='';
+DECLARE @TSQL AS NVARCHAR(1000)='';
+
+DECLARE CURSOR_1 CURSOR
+    FOR
+	SELECT DISTINCT NAME FROM SYSJOBS
+OPEN CURSOR_1;
+FETCH NEXT FROM CURSOR_1 INTO @JOB_NAME
+WHILE @@FETCH_STATUS = 0
+    BEGIN
+		SET @TSQL='USE MSDB;';
+		SET @TSQL = @TSQL+
+		'
+		EXEC dbo.sp_update_job
+		@job_name = '''+@JOB_NAME+''',
+		@notify_level_email = ''2'',
+		@notify_level_eventlog = ''2'',
+		@notify_email_operator_name = ''DBA1''
+		'
+		EXECUTE sp_executesql @TSQL;
+		FETCH NEXT FROM CURSOR_1 INTO @JOB_NAME
+    END
+CLOSE CURSOR_1;
+DEALLOCATE CURSOR_1;
+
+
+

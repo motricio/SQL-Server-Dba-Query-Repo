@@ -1,0 +1,369 @@
+-- Enabling the replication database
+use master
+exec sp_replicationdboption @dbname = N'CoreLibrary', @optname = N'publish', @value = N'true'
+GO
+
+exec [CoreLibrary].sys.sp_addlogreader_agent @job_login = null, @job_password = null, @publisher_security_mode = 1
+GO
+-- Adding the transactional publication
+use [CoreLibrary]
+exec sp_addpublication @publication = N'Trans_PUB_CoreLibraryReportPUB', @description = N'Transactional publication of database ''CoreLibrary'' from Publisher ''MUM-DB01''.', @sync_method = N'concurrent', @retention = 0, @allow_push = N'true', @allow_pull = N'true', @allow_anonymous = N'true', @enabled_for_internet = N'false', @snapshot_in_defaultfolder = N'true', @compress_snapshot = N'false', @ftp_port = 21, @ftp_login = N'anonymous', @allow_subscription_copy = N'false', @add_to_active_directory = N'false', @repl_freq = N'continuous', @status = N'active', @independent_agent = N'true', @immediate_sync = N'true', @allow_sync_tran = N'false', @autogen_sync_procs = N'false', @allow_queued_tran = N'false', @allow_dts = N'false', @replicate_ddl = 1, @allow_initialize_from_backup = N'false', @enabled_for_p2p = N'false', @enabled_for_het_sub = N'false'
+GO
+
+
+exec sp_addpublication_snapshot @publication = N'Trans_PUB_CoreLibraryReportPUB', @frequency_type = 1, @frequency_interval = 0, @frequency_relative_interval = 0, @frequency_recurrence_factor = 0, @frequency_subday = 0, @frequency_subday_interval = 0, @active_start_time_of_day = 0, @active_end_time_of_day = 235959, @active_start_date = 0, @active_end_date = 0, @job_login = null, @job_password = null, @publisher_security_mode = 1
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'sa'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'BUILTIN\Administrators'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\mauricio.rodriguez'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\pradhumn.jain'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'procind\configuser'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\satyam.gupta'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\ankush.verma'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\nosina.prabhakar'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\manohar.reddy'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\jagpal.singh'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\anil.athota'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\harsha.marri'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\svc_ppgccsql$'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\vinay.sarva'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\tarun.parashar'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\niranjan.bolisetti'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\simon.bejarano'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\vinod.cj'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'PROCIND\grpDBAProject'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'AZTEST\svc_ppg_azt$'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'AZTEST\simon.bejarano'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'AZTEST\Vinod.cj'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'NT SERVICE\Winmgmt'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'NT SERVICE\SQLWriter'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'NT SERVICE\SQLSERVERAGENT'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'NT Service\MSSQLSERVER'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreLibraryReportPUB', @login = N'srsuser'
+GO
+
+-- Adding the transactional articles
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'BIN', @source_owner = N'dbo', @source_object = N'BIN', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'drop', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'none', @destination_table = N'BIN', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboBIN]', @del_cmd = N'CALL [sp_MSdel_dboBIN]', @upd_cmd = N'SCALL [sp_MSupd_dboBIN]'
+GO
+
+
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @source_owner = N'dbo', @source_object = N'CoreLibLUT', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'none', @destination_table = N'CoreLibLUT', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'true', @ins_cmd = N'CALL [dbo].[sp_MSins_dboCoreLibLUT]', @del_cmd = N'CALL [dbo].[sp_MSdel_dboCoreLibLUT]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dboCoreLibLUT]'
+
+-- Adding the article's partition column(s)
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'LUTid', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'LutCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'LutDescription', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'LutLanguage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'DisplayOrdr', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'tpyNAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @column = N'tpyLAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+
+-- Adding the article synchronization object
+exec sp_articleview @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CoreLibLUT', @view_name = N'syncobj_0x3334364142464131', @filter_clause = N'', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'CustomerIdDetails', @source_owner = N'dbo', @source_object = N'CustomerIdDetails', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'manual', @destination_table = N'CustomerIdDetails', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [dbo].[sp_MSins_dboCustomerIdDetails]', @del_cmd = N'CALL [dbo].[sp_MSdel_dboCustomerIdDetails]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dboCustomerIdDetails]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @source_owner = N'dbo', @source_object = N'FeesCatalogAccounts', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'none', @destination_table = N'FeesCatalogAccounts', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'true', @ins_cmd = N'CALL [sp_MSins_dboFeesCatalogAccounts]', @del_cmd = N'CALL [sp_MSdel_dboFeesCatalogAccounts]', @upd_cmd = N'SCALL [sp_MSupd_dboFeesCatalogAccounts]'
+
+-- Adding the article's partition column(s)
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'acctId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'rowClassifier', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'grpClassifier', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'LAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'LAPD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'NAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'StatementDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent01ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent01AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent02ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent02AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent03ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent03AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent04ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent04AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent05ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'parent05AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'PrimaryCurrencyCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'SecondaryCurrencyCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeIdentifier', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TransactionCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeTranCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeFrequency', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'DefaultFee', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'ReversalTranCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'ReversalFeeTranCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FirstAssessedDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'NextMiscFeeChargeDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MTCGrpName', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'NoOfFreeTxn', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TimeFrame', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeCalculationMethod', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Rate1Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Rate1Percent', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Rate1AmountorPercentLimit', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Rate1LimitPeriod', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Rate2Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Rate2Percent', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MinFeeAmount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaxFeeAmount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'NetworkName', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'AssociationFeeType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'AssocoationName', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'SettlementCurrCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'SettlementTxnType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TierType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TierBasis', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TierLimitIndicator', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TierFeeTiming', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Amt1', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal1Cnt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal1Amt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal1Units', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Amt2', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal2Cnt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal2Amt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal2Units', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Amt3', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal3Cnt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal3Amt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal3Units', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Amt4', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal43Cnt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal4Amt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MaximumBal4Units', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Amt5', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'tpyNAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'tpyLAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'param_sig', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'param_state', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'param_lcd', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'param_fvt', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'_paramLVT', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Recurring', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Duration', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'DurationPeriod', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Occurrence', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'DeleteIfZeroBalance', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FreeCounterTiming', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeAssesOn', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'RLSKey', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'RLSKey1', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'accessID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'InstitutionId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'MultiCurrencySupport', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier1Limit', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier2Limit', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier3Limit', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier4Limit', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier5Limit', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier1Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier2Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier3Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier4Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier5Amount', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier1Percentage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier2Percentage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier3Percentage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier4Percentage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'Tier5Percentage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'TierPeriod', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @column = N'FeeLocalCurrency', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+
+-- Adding the article synchronization object
+exec sp_articleview @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FeesCatalogAccounts', @view_name = N'syncobj_0x4241453933304342', @filter_clause = N'', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FXRateDetail', @source_owner = N'dbo', @source_object = N'FXRateDetail', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'drop', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'FXRateDetail', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboFXRateDetail]', @del_cmd = N'CALL [sp_MSdel_dboFXRateDetail]', @upd_cmd = N'SCALL [sp_MSupd_dboFXRateDetail]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'FXRateDetaillog', @source_owner = N'dbo', @source_object = N'FXRateDetaillog', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'FXRateDetaillog', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboFXRateDetaillog]', @del_cmd = N'CALL [sp_MSdel_dboFXRateDetaillog]', @upd_cmd = N'SCALL [sp_MSupd_dboFXRateDetaillog]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'MarkupTable', @source_owner = N'dbo', @source_object = N'MarkupTable', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'none', @destination_table = N'MarkupTable', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboMarkupTable]', @del_cmd = N'CALL [sp_MSdel_dboMarkupTable]', @upd_cmd = N'SCALL [sp_MSupd_dboMarkupTable]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'MemoExpenseCategory', @source_owner = N'dbo', @source_object = N'MemoExpenseCategory', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'MemoExpenseCategory', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboMemoExpenseCategory]', @del_cmd = N'CALL [sp_MSdel_dboMemoExpenseCategory]', @upd_cmd = N'SCALL [sp_MSupd_dboMemoExpenseCategory]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @source_owner = N'dbo', @source_object = N'Memos', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'none', @destination_table = N'memos', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'true', @ins_cmd = N'CALL [dbo].[sp_MSins_dbomemos]', @del_cmd = N'CALL [dbo].[sp_MSdel_dbomemos]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dbomemos]'
+
+-- Adding the article's partition column(s)
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'UniqueId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'acctId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'AccountNumber', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'nameline1', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'nameline3', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'CreateDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'CreatTime', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'Priority', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'Memo', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'UserId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'memolastupd', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'lastupdate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'tpyNAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'tpyLAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'Source', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'ApplicationId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'WmCaseNbr', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'QuickKey', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'GeneratedMethod', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'MemoReason', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'TranID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'MemoReasonType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'Deleted', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'UserType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'UpdateDateTime', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'LastUpdatedBy', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @column = N'CaseID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+
+-- Adding the article synchronization object
+exec sp_articleview @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'memos', @view_name = N'syncobj_0x3341413732363145', @filter_clause = N'', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @source_owner = N'dbo', @source_object = N'OnlineStatements', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'OnlineStatements', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'true', @ins_cmd = N'CALL [sp_MSins_dboOnlineStatements]', @del_cmd = N'CALL [sp_MSdel_dboOnlineStatements]', @upd_cmd = N'SCALL [sp_MSupd_dboOnlineStatements]'
+
+-- Adding the article's partition column(s)
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'SessionID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'AcctId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'parent01AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'parent01ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'parent02AID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'parent02ATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'InstitutionID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'StatementID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'ReportID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'ScheduleId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'GeneratedId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'ReportDateTime', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'Source', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'Language', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'CMReportID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'AccountType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'CreatedBy', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'CreatedDateTime', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @column = N'IsActive', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+
+-- Adding the article synchronization object
+exec sp_articleview @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'OnlineStatements', @view_name = N'SYNC_OnlineStatements_1__156', @filter_clause = N'', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'ReportList', @source_owner = N'dbo', @source_object = N'ReportList', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'none', @destination_table = N'ReportList', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboReportList]', @del_cmd = N'CALL [sp_MSdel_dboReportList]', @upd_cmd = N'SCALL [sp_MSupd_dboReportList]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'ReportSchedules', @source_owner = N'dbo', @source_object = N'ReportSchedules', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'ReportSchedules', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboReportSchedules]', @del_cmd = N'CALL [sp_MSdel_dboReportSchedules]', @upd_cmd = N'SCALL [sp_MSupd_dboReportSchedules]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N't_dba_replication_latency_Check_CoreLibrary', @source_owner = N'dbo', @source_object = N't_dba_replication_latency_Check_CoreLibrary', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'drop', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'manual', @destination_table = N't_dba_replication_latency_Check_CoreLibrary', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [dbo].[sp_MSins_dbot_dba_replication_latency_Check_CoreLibrary]', @del_cmd = N'CALL [dbo].[sp_MSdel_dbot_dba_replication_latency_Check_CoreLibrary]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dbot_dba_replication_latency_Check_CoreLibrary]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UmgmtCommonLUT', @source_owner = N'dbo', @source_object = N'UMgmtCommonLUT', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'none', @destination_table = N'UmgmtCommonLUT', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [dbo].[sp_MSins_dboUmgmtCommonLUT]', @del_cmd = N'CALL [dbo].[sp_MSdel_dboUmgmtCommonLUT]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dboUmgmtCommonLUT]'
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @source_owner = N'dbo', @source_object = N'UserInformation', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'none', @destination_table = N'UserInformation', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'true', @ins_cmd = N'CALL [sp_MSins_dboUserInformation]', @del_cmd = N'CALL [sp_MSdel_dboUserInformation]', @upd_cmd = N'SCALL [sp_MSupd_dboUserInformation]'
+
+-- Adding the article's partition column(s)
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrPassword', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrInfo1', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrErnLogin', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrStatus', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrLocale', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecQuestion', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecAnswer', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'PasswordDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'ErnLoginDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'StatusCodeDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrAID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrIdentifier', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'PasswordPolicy', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrRLSQualifier', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'tpyNAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'tpyLAD', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'RestrictionPolicy', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'InternalId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'InternalPassword', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'FirstName', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'Surname', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'accessID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'RLSRef', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'EmbATID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'EmbAcctid', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'CardRegStatusIVR', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'CardRegDateIVR', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'CardCancelDateIVR', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'LogAction', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'LogMsgStore', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'LogForUser', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecQuestion2', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecAnswer2', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecQuestion3', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecAnswer3', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecQuestion4', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecAnswer4', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecQuestion5', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecAnswer5', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrFirstName', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrLastName', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrBusinessPhone', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrBusinessPhoneExtension', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrMobilePhone', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'carrierSelector', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrEmailAddress', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrPwChangeAttempts', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrResetPasswordValue', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecurityAnsValue', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrGroupType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'LastLoginDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'UserCreationDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'EncryptedPass', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'SecurityType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'SecurityLevel', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'usrSecurityAnsErnLogin', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'LockAfterInactivityDays', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'ManuallyAutoLocked', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'SourceUserType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'InstituteID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @column = N'EmployeeID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+
+-- Adding the article synchronization object
+exec sp_articleview @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'UserInformation', @view_name = N'syncobj_0x4646334235444344', @filter_clause = N'', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+GO
+use [CoreLibrary]
+exec sp_addarticle @publication = N'Trans_PUB_CoreLibraryReportPUB', @article = N'userRLSgroups', @source_owner = N'dbo', @source_object = N'UserRLSGroups', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'none', @destination_table = N'userRLSgroups', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [dbo].[sp_MSins_dbouserRLSgroups]', @del_cmd = N'CALL [dbo].[sp_MSdel_dbouserRLSgroups]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dbouserRLSgroups]'
+GO
+

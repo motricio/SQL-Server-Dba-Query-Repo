@@ -1,0 +1,67 @@
+1. [Conteo Total de Ejecuciones]
+SELECT
+    Db_name(st.dbid) [Base de Datos],
+    Object_schema_name(st.objectid, dbid) [Schema],
+    Object_name(st.objectid, dbid)        [USP],
+    Max(cp.usecounts)                     [Total Ejecuciones]
+FROM   
+    sys.dm_exec_cached_plans cp
+    CROSS apply sys.Dm_exec_sql_text(cp.plan_handle) st
+WHERE  
+    Db_name(st.dbid) IS NOT NULL
+    AND cp.objtype = 'proc'
+GROUP  BY
+    cp.plan_handle,
+    Db_name(st.dbid),
+    Object_schema_name(objectid, st.dbid),
+    Object_name(objectid, st.dbid)
+ORDER  BY
+        Max(cp.usecounts)
+
+2. [Procedimientos que Consumen mas CPU]
+
+SELECT
+    Db_name(st.dbid)
+    [Base de Datos, Object_schema_name(st.objectid, dbid) [Schema],
+    Object_name(st.objectid, dbid) [USP],
+    Max(cp.usecounts) [Total Ejecuciones],
+    Sum(qs.total_worker_time) [Consumo Total CPU],
+    Sum(qs.total_worker_time) / ( Max(cp.usecounts) * 1.0 )    [Consumo Promedio CPU]
+FROM   
+    sys.dm_exec_cached_plans cp
+    INNER JOIN sys.dm_exec_query_stats qs
+        ON cp.plan_handle = qs.plan_handle
+    CROSS apply sys.Dm_exec_sql_text(cp.plan_handle) st
+WHERE  
+    Db_name(st.dbid) IS NOT NULL
+    AND cp.objtype = 'proc'
+GROUP  BY
+    Db_name(st.dbid),
+    Object_schema_name(objectid, st.dbid),
+    Object_name(objectid, st.dbid)
+ORDER  BY
+    Sum(qs.total_worker_time) DESC
+
+3. [Procedimientos con mayor tiempo de ejecucion]
+
+SELECT
+    Db_name(st.dbid) [Base de Datos, 
+    Object_schema_name(objectid, st.dbid) [Schema],
+    Object_name(objectid, st.dbid) [USP],
+    Max(cp.usecounts) [Total Ejecuciones],
+    Sum(qs.total_elapsed_time) [Tiempo Total Ejecuciones],
+    Sum(qs.total_elapsed_time) / Max(cp.usecounts) [Tiempo Promedio Ejecuciones]
+FROM   
+    sys.dm_exec_query_stats qs
+    CROSS apply sys.Dm_exec_sql_text(qs.plan_handle) st
+    INNER JOIN sys.dm_exec_cached_plans cp
+        ON qs.plan_handle = cp.plan_handle
+WHERE  
+    Db_name(st.dbid) IS NOT NULL
+    AND cp.objtype = 'proc'
+GROUP  BY
+    Db_name(st.dbid),
+    Object_schema_name(objectid,st.dbid),
+    Object_name(objectid, st.dbid)
+ORDER  BY
+    Sum(qs.total_elapsed_time) DESC

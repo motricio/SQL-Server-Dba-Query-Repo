@@ -1,0 +1,35 @@
+/*
+
+use distribution;
+
+select * from msrepl_errors order by 2 desc
+
+*/
+
+use CoreAuth
+
+exec sp_helppublication @publication ='CoreAuthReportPUB'
+
+
+EXEC sp_get_distributor
+
+
+SELECT name, data_source FROM sys.servers WHERE is_distributor = 1
+
+exec sp_helpdistributor
+
+exec sp_helpdistpublisher @publisher='CCAZE1TPRD1'
+
+
+select @@Servername, datasource,srvnetname ,* from sys.sysservers where srvname='repl_distributor'
+
+
+EXECUTE sp_setnetname @server = N'repl_distributor', @netname = N'AZTDSTAGL';
+
+--LISTDISTTEST
+
+EXEC sp_helpdistributor;
+EXEC sp_helpdistributiondb;
+EXEC sp_helpdistpublisher;
+EXEC sp_helpreplicationdboption;
+exec sp_helppublication

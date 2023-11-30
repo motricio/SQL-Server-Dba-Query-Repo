@@ -1,0 +1,53 @@
+--Query to get total size of Last backups
+------------------Total Backup sizes of all databases-------
+SELECT
+(SUM(backup_size)) /1024 / 1024 / 1024 As BackupSizeInGBs,
+(SUM(compressed_backup_size)) /1024 / 1024 / 1024 As CompressedBackupSizeInGBs
+FROM
+msdb.dbo.backupset
+INNER JOIN
+(
+SELECT 
+database_name, 
+MAX(backup_start_date) as LastFullBackupDate 
+FROM 
+msdb.dbo.backupset 
+WHERE 
+media_set_id IN (SELECT media_set_id FROM msdb.dbo.backupmediafamily ) AND 
+type = 'D'--— change to D/I/L for Full/Diff/transaction logs
+GROUP BY 
+database_name
+) AS GetLastDate
+ON
+msdb.dbo.backupset.database_name = GetLastDate.database_name AND
+msdb.dbo.backupset.backup_start_date = GetLastDate.LastFullBackupDate
+
+USE msdb
+GO
+SELECT DISTINCT j.Name AS job_name,jh.run_date AS last_run_date, jh.run_duration,
+case LEN(jh.run_duration)
+when 6 then
+	left(cast(jh.run_duration as varchar(10)),2)+':'+
+	substring(cast(jh.run_duration as varchar(10)),2,2) +':'+
+	substring(cast(jh.run_duration as varchar(10)),4,2)
+when 5 then
+	'0'+left(cast(jh.run_duration as varchar(10)),1)+':'+
+	substring(cast(jh.run_duration as varchar(10)),2,2) +':'+
+	substring(cast(jh.run_duration as varchar(10)),4,2)
+when 4 then
+	'00:'+left(cast(jh.run_duration as varchar(10)),2)+':'+
+	substring(cast(jh.run_duration as varchar(10)),2,2)
+when 3 then
+	'00:0'+left(cast(jh.run_duration as varchar(10)),1)+':'+
+	substring(cast(jh.run_duration as varchar(10)),2,2)
+else '00:00:'+cast(jh.run_duration as varchar(10))
+end
+as [duration (hh:mm:ss)]
+FROM sysjobhistory jh, sysjobs j
+WHERE jh.job_id = j.job_id AND j.Name 
+in ('DBA - Maint - FullBackup_Multistripes','DBA - Maint - DiffBackup_Multistripes')  
+AND run_status = 1
+AND jh.run_date = 
+(SELECT MAX(jhm.run_date) FROM sysjobhistory jhm WHERE jh.job_id = jhm.job_id)
+ORDER BY jh.run_duration desc
+GO

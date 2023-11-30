@@ -1,0 +1,20 @@
+-- Always On Dm Views querys
+-- https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/always-on-availability-groups-dynamic-management-views-functions?view=azuresqldb-current
+
+--select top 10 * from sys.dm_hadr_ag_threads
+select top 10 * from sys.dm_hadr_auto_page_repair
+select top 10 * from sys.dm_hadr_automatic_seeding
+select top 10 * from sys.dm_hadr_availability_group_states
+select top 10 * from sys.dm_hadr_availability_replica_cluster_nodes
+select top 10 * from sys.dm_hadr_availability_replica_cluster_states
+select top 10 * from sys.dm_hadr_availability_replica_states
+select top 10 * from sys.dm_hadr_cluster
+select top 10 * from sys.dm_hadr_cluster_members
+select top 10 * from sys.dm_hadr_cluster_networks
+select top 10 * from sys.dm_hadr_database_replica_cluster_states
+select top 10 * from sys.dm_hadr_database_replica_states
+--select top 10 * from sys.dm_hadr_db_threads
+select top 10 * from sys.dm_hadr_instance_node_map
+select top 10 * from sys.dm_hadr_name_id_map
+select top 10 * from sys.dm_hadr_physical_seeding_stats
+select top 10 * from sys.dm_tcp_listener_states

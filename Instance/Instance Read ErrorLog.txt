@@ -1,0 +1,5 @@
+sp_readerrorlog 0,1,'Read SQL Server log'
+EXEC master.dbo.xp_readerrorlog 0, 1, "login failed", "login failed", '2018-01-16 05:00:00.000', '2018-01-16 07:50:00.000', "desc"
+
+sp_readerrorlog 0,2,'Read SQL Agent log'
+EXEC master.dbo.xp_readerrorlog 0, 2, "backup", "failed", "2017-01-02", "2017-02-02", "desc"

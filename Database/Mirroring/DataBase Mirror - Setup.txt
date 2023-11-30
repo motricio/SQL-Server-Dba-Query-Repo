@@ -1,0 +1,267 @@
+--Ejecuatar en triara
+
+## llave de encripcion master key prvsql04
+
+USE master;
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'PrVsQl04.#';
+GO
+
+## crear certificado prvsql04
+
+USE master;
+CREATE CERTIFICATE cert_mirror_prvsql04 
+   WITH SUBJECT = 'PRVSQL04 Certificate mirror';
+GO
+
+##create endpoint prvsql04
+
+
+CREATE ENDPOINT EP_mirror_porv04
+   STATE = STARTED
+   AS TCP (
+      LISTENER_PORT=5052
+      , LISTENER_IP = ALL
+   ) 
+   FOR DATABASE_MIRRORING ( 
+      AUTHENTICATION = CERTIFICATE cert_mirror_prvsql04
+      , ENCRYPTION = REQUIRED ALGORITHM AES
+      , ROLE = ALL
+   );
+GO
+
+
+##backup certificate prvsql04
+
+BACKUP CERTIFICATE cert_mirror_prvsql04 TO FILE = 'C:\tools\prvsql04_cert.cer';
+GO
+
+## llave de encripcion master key prvsql05
+
+USE master;
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'PrVsQl05.#';
+GO
+
+## crear certificado prvsql04
+
+USE master;
+CREATE CERTIFICATE cert_mirror_prvsql05 
+   WITH SUBJECT = 'PRVSQL05 Certificate mirror';
+GO
+
+##create endpoint prvsql05
+
+
+CREATE ENDPOINT EP_mirror_porv05
+   STATE = STARTED
+   AS TCP (
+      LISTENER_PORT=5052
+      , LISTENER_IP = ALL
+   ) 
+   FOR DATABASE_MIRRORING ( 
+      AUTHENTICATION = CERTIFICATE cert_mirror_prvsql05
+      , ENCRYPTION = REQUIRED ALGORITHM AES
+      , ROLE = ALL
+   );
+GO
+
+
+##backup certificate prvsql05
+
+BACKUP CERTIFICATE cert_mirror_prvsql05 TO FILE = 'C:\tools\prvsql05_cert.cer';
+GO
+
+
+
+
+##Create a login on prvsql04
+USE master;
+CREATE LOGIN lmir04 WITH PASSWORD = 'Lm#109234&';
+GO
+
+##Create a user for that login
+
+CREATE USER lmir04 FOR LOGIN lmir04;
+GO
+
+##Associate the certificate prvsql05 with the user.
+
+
+CREATE CERTIFICATE cert_mirror_prvsql05
+   AUTHORIZATION lmir04
+   FROM FILE = 'C:\tools\prvsql05_cert.cer'
+GO
+
+
+## Grant CONNECT permission on the login for the remote mirroring endpoint
+
+GRANT CONNECT ON ENDPOINT::EP_mirror_porv04 TO [lmir04];
+GO
+
+
+
+## consulta certificados
+select * from sys.symmetric_keys
+go
+
+## borrar certificados
+drop certificate nombre_certificado
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+nota ejemplo
+
+https://msdn.microsoft.com/en-us/library/ms191140.aspx
+-------------
+
+producccion
+
+USE master;
+CREATE CERTIFICATE cert_mirror_pqrdb1 
+   WITH SUBJECT = 'pqrdb1  Certificate mirror', EXPIRY_DATE = '20301031';
+GO
+
+select * from sys.certificates
+go
+
+
+
+
+
+
+CREATE ENDPOINT EP_mirror_pqrdb1
+   STATE = STARTED
+   AS TCP (
+      LISTENER_PORT=5052
+      , LISTENER_IP = ALL
+   ) 
+   FOR DATABASE_MIRRORING ( 
+      AUTHENTICATION = CERTIFICATE cert_mirror_pqrdb1
+      , ENCRYPTION = REQUIRED ALGORITHM AES
+      , ROLE = ALL
+   );
+GO
+
+
+
+BACKUP CERTIFICATE cert_mirror_pqrdb1 TO FILE = 'C:\Certificados\cert_mirror_pqrdb1.cer';  
+GO  
+
+
+
+
+
+
+USE master;  
+CREATE LOGIN pqrdb1cont_mirror WITH PASSWORD = 'pqrdb1cont$2016';  
+GO  
+
+
+
+CREATE USER pqrdb1cont_mirror FOR LOGIN pqrdb1cont_mirror;  
+GO  
+
+
+CREATE CERTIFICATE cert_mirror_pqrdb1cont  
+   AUTHORIZATION pqrdb1cont_mirror  
+   FROM FILE = 'C:\Certificados\cert_mirror_pqrdb1cont.cer'  
+GO  
+
+
+
+select * from sys.certificates
+
+
+
+GRANT CONNECT ON ENDPOINT::EP_mirror_pqrdb1 TO pqrdb1cont_mirror;  
+GO   
+
+
+---------------
+
+contingecia
+
+
+USE master;
+CREATE CERTIFICATE cert_mirror_pqrdb1cont
+   WITH SUBJECT = 'pqrdb1cont  Certificate mirror', EXPIRY_DATE = '20301031';
+GO
+
+select * from sys.certificates
+go
+
+
+
+
+
+
+CREATE ENDPOINT EP_mirror_pqrdb1cont
+   STATE = STARTED
+   AS TCP (
+      LISTENER_PORT=5052
+      , LISTENER_IP = ALL
+   ) 
+   FOR DATABASE_MIRRORING ( 
+      AUTHENTICATION = CERTIFICATE cert_mirror_pqrdb1cont
+      , ENCRYPTION = REQUIRED ALGORITHM AES
+      , ROLE = ALL
+   );
+GO
+
+
+
+BACKUP CERTIFICATE cert_mirror_pqrdb1cont TO FILE = 'C:\Certificados\cert_mirror_pqrdb1cont.cer';  
+GO  
+
+
+
+select * from sys.dm_exec_connections
+
+
+
+
+
+USE master;  
+CREATE LOGIN pqrdb1_mirror WITH PASSWORD = 'pqrdb1$2016';  
+GO  
+
+
+
+CREATE USER pqrdb1_mirror FOR LOGIN pqrdb1_mirror;  
+GO  
+
+
+CREATE CERTIFICATE cert_mirror_pqrdb1 
+   AUTHORIZATION pqrdb1_mirror  
+   FROM FILE = 'C:\Certificados\cert_mirror_pqrdb1.cer'  
+GO  
+
+
+
+select * from sys.certificates
+
+
+
+GRANT CONNECT ON ENDPOINT::EP_mirror_pqrdb1cont TO pqrdb1_mirror;  
+GO  
+
+
+alter database [test] set partner off 

@@ -1,0 +1,21 @@
+
+EXEC sp_resetstatus [netscalerdb];
+
+ALTER DATABASE [netscalerdb] SET ONLINE
+
+DBCC checkdb([netscalerdb])
+
+ALTER DATABASE [netscalerdb] SET SINGLE_USER WITH ROLLBACK IMMEDIATE
+
+DBCC CheckDB ([netscalerdb], REPAIR_ALLOW_DATA_LOSS)
+
+ALTER DATABASE [netscalerdb] SET MULTI_USER
+
+---------------------------------------------------------------------------
+ALTER DATABASE netscalerdb SET EMERGENCY;   
+ALTER DATABASE netscalerdb SET SINGLE_USER;  
+
+DBCC CHECKDB (netscalerdb, REPAIR_ALLOW_DATA_LOSS) 
+WITH NO_INFOMSGS, ALL_ERRORMSGS;
+
+ALTER DATABASE netscalerdb SET MULTI_USER; 

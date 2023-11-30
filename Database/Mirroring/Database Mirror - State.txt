@@ -1,0 +1,2 @@
+select database_id,db_name(database_id),mirroring_state_desc,mirroring_role_desc from sys.database_mirroring
+where database_id >5

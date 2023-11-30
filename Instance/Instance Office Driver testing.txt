@@ -1,0 +1,28 @@
+exec sp_configure 'Advanced', 1
+RECONFIGURE
+go
+
+exec sp_configure 'Ad Hoc Distributed Queries', 1
+RECONFIGURE
+go
+
+EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1  
+go
+EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1
+go
+
+SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0', 'Excel 12.0;Database=U:\etl\DTS\DTS\Test.xlsx;', 'SELECT * FROM [Hoja1$]')
+go
+
+exec sp_configure 'Advanced', 1
+RECONFIGURE
+go
+
+exec sp_configure 'Ad Hoc Distributed Queries', 0
+RECONFIGURE
+go
+
+EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 0 
+go
+EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 0
+go

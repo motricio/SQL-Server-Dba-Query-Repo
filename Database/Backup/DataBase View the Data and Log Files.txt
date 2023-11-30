@@ -1,0 +1,1 @@
+RESTORE FILELISTONLY FROM  DISK = N'/u98/sqlserver/backup/mssqlserver/AdventureWorks2016CTP3.bak'

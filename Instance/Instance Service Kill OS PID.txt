@@ -1,0 +1,5 @@
+en cmd:
+
+sc queryex mssqlserver
+
+taskkill /PID # /F

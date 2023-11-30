@@ -1,0 +1,4 @@
+SELECT DISTINCT Trace.EventID, TraceEvents.NAME AS Event_Desc
+FROM   ::fn_trace_geteventinfo(1) Trace
+,sys.trace_events TraceEvents
+WHERE Trace.eventID = TraceEvents.trace_event_id

@@ -1,0 +1,6 @@
+SELECT * FROM sys.endpoints
+WHERE type = 4
+
+ALTER ENDPOINT EP_mirror_porv05 STATE = STOPPED
+
+ALTER ENDPOINT EP_mirror_porv05 STATE = STARTED

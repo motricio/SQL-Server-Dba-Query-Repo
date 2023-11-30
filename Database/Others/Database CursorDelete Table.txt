@@ -1,0 +1,14 @@
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[TMPSEQUENCES](
+	[FecIni] [datetime] NULL,
+	[FecFin] [datetime] NULL,
+	[Con] [int] NULL
+) ON [PRIMARY]
+
+GO
+

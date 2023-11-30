@@ -1,0 +1,49 @@
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[CLR_Depuracion_CursorDelete]	
+AS
+BEGIN
+	
+
+DECLARE @SEQ_MIN datetime;
+DECLARE @SEQ_MAX datetime;
+DECLARE @ID_U uniqueidentifier;
+DECLARE @ID_DATE datetime;
+
+DECLARE DATE_cursor CURSOR FOR
+	-- TABLA CONTROL PARA LOS SEQUENCES
+	SELECT [fecini], [fecfin] FROM dbo.TMPSEQUENCES order by FecIni
+OPEN DATE_cursor
+FETCH NEXT FROM DATE_cursor INTO @SEQ_MIN, @SEQ_MAX
+WHILE (@@FETCH_STATUS = 0)
+BEGIN
+	DECLARE uni_cursor CURSOR FOR 
+		SELECT [TransactionId],[StartTime] FROM  [CO_Porvenir_ZTA].[dbo].[MonitorMessageLog_history] WHERE [StartTime] BETWEEN @SEQ_MIN AND @SEQ_MAX;
+	OPEN uni_cursor
+	FETCH NEXT FROM uni_cursor INTO @ID_U,@ID_DATE
+	WHILE (@@FETCH_STATUS = 0)
+		BEGIN
+			--BORRA REGISTRO
+			BEGIN TRANSACTION DELFOR
+				DELETE FROM  [CO_Porvenir_ZTA].[dbo].[MonitorMessageLog_history]  WHERE [TransactionId] = @ID_U AND [StartTime]=@ID_DATE;
+				--PRINT CONVERT(char(255), @ID_U);
+			COMMIT TRANSACTION DELFOR;
+			
+			FETCH NEXT FROM uni_cursor INTO @ID_U,@ID_DATE
+		END
+		CLOSE uni_cursor
+		DEALLOCATE uni_cursor
+		update  [CO_Porvenir_ZTA].[dbo].[TMPSEQUENCES] set [Con] = 1 where FecIni=@SEQ_MIN and FecFin=@SEQ_MAX;
+		
+FETCH NEXT FROM DATE_cursor INTO @SEQ_MIN, @SEQ_MAX
+END
+CLOSE DATE_cursor
+DEALLOCATE DATE_cursor
+ 
+ END
+GO
+

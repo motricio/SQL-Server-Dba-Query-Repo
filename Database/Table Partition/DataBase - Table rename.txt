@@ -1,0 +1,9 @@
+EXEC sp_rename 'SPS_RETURN', 'SPS_RETURN_OLD'
+GO
+EXEC sp_rename 'SPS_RETURN_PART ', 'SPS_RETURN'
+GO
+
+USE SPOKE_Transact  
+GO  
+EXEC sp_recompile N'dbo.SPS_RETURN';  
+GO 

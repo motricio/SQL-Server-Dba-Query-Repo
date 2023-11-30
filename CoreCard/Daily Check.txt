@@ -1,0 +1,12 @@
+declare @Today as datetime =  getdate();
+declare @year int,@month int,@day as int;
+select @year=datepart(yyyy,@Today), @month=datepart(mm,@Today), @day=datepart(DD,@Today)
+
+print cast(@year as varchar(5)) + '-'+ cast(@month as varchar(5)) +'-'+  cast(@day as varchar(5)) 
+
+select * from t_dba_backup_log where datepart(yyyy,backup_start_date)=@year and month(backup_start_date)=@month and day(backup_start_date)=@day
+
+
+select * from  t_dba_backup_deletion_logs where year(File_deletion_time)=@year and month(File_deletion_time)=@month and day(File_deletion_time)=@day-1
+
+ 

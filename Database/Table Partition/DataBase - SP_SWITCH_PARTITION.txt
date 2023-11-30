@@ -1,0 +1,25 @@
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		Mauricio Rodriguez
+-- Create date:		2014-01-16
+-- Description:		Swtich de particiones para tablas particionadas con volumetría superior a 1 millon de registros trasaccionales
+-- =============================================
+CREATE PROCEDURE [dbo].[SP_SWITCH_PARTITION]
+    @SourceTable varchar(100),
+    @DestinationTable varchar(100),
+    @IDPartition int
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @TSQL AS NVARCHAR(2000);
+    SET @TSQL = 'ALTER TABLE '+ @SourceTable +' SWITCH PARTITION ' + CAST(@IDPartition AS VARCHAR(100)) + ' TO ' + @DestinationTable+ ' PARTITION ' + CAST(@IDPartition AS VARCHAR(100))
+    EXEC sp_executesql @TSQL
+    --PRINT @TSQL
+END
+
+GO

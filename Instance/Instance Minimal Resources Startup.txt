@@ -1,0 +1,3 @@
+sqlservr.exe /f /c
+
+SQLCMD –S localhost –E

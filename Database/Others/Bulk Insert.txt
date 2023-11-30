@@ -1,0 +1,17 @@
+CREATE TABLE #TEXTFILE_1(
+    FIELD1 varchar(1000) ,
+    FIELD2 varchar(1000) 
+    --FIELD3 varchar(1000) ,
+   -- FIELD4 varchar(1000)
+   );
+
+BULK INSERT #TEXTFILE_1 FROM 'F:\Aplicaciones\hosts.txt'
+WITH (FIELDTERMINATOR ='	',ROWTERMINATOR =' \n')
+
+/*You now have your bulk data*/
+
+--insert into yourtable (field1, field2, field3, field4, field5, field6)
+select txt.FIELD1, txt.FIELD2
+from #TEXTFILE_1 txt
+
+drop table #TEXTFILE_1

@@ -1,0 +1,33 @@
+DECLARE @tblSPList TABLE (
+SPID INT IDENTITY (1, 1) NOT NULL PRIMARY KEY CLUSTERED,
+SPName SYSNAME
+)
+
+DECLARE @SPName SYSNAME,
+@RowCounter INT,
+@RecordCounter INT,
+@UserName VARCHAR(100),
+@ExecuteSQL VARCHAR(1000)
+
+SET @UserName='4-72\oscar.posada'
+
+INSERT INTO @tblSPList (SPName)
+SELECT '['+ROUTINE_SCHEMA+'].['+ROUTINE_NAME+']' FROM INFORMATION_SCHEMA.ROUTINES
+WHERE ROUTINE_TYPE = 'PROCEDURE'
+
+SET @RecordCounter = (SELECT count(*) FROM @tblSPList)
+SET @RowCounter = 1
+
+WHILE (@RowCounter < @RecordCounter + 1)
+BEGIN
+SELECT @SPName = SPName
+FROM @tblSPList
+WHERE SPID = @RowCounter
+SET @ExecuteSQL = N'Grant VIEW Definition on ' + rtrim(cast(@SPName AS VARCHAR(128))) + ' to [' + @UserName +']'
+
+EXEC(@ExecuteSQL)
+PRINT @ExecuteSQL
+
+SET @RowCounter += 1
+END
+GO

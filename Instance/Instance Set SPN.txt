@@ -1,0 +1,4 @@
+Default:
+setspn -A MSSQLSvc/myhost.redmond.microsoft.com:1433 DOMAIN\SQLServiceAccount
+Named:
+setspn -A MSSQLSvc/myhost.redmond.microsoft.com:instancename DOMAIN\SQLServiceAccount

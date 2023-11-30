@@ -1,0 +1,61 @@
+USE master;
+
+DECLARE @DB_NAME AS VARCHAR(200)='';
+DECLARE @MEMBER_OF AS VARCHAR(200)='';
+DECLARE @TSQL AS NVARCHAR(4000)='';
+
+DECLARE @TBL_USERS AS TABLE
+	(
+		[DataBaseName] varchar(1000),
+		[FileName] varchar(2000),
+		[Physical_name] varchar(2000),
+		[CurrentSizeMB] varchar(200)
+		
+	);
+
+ 
+DECLARE db_cursor CURSOR FOR  
+SELECT 
+--top 1
+name 
+FROM master.dbo.sysdatabases 
+WHERE name not IN ('master','model','msdb','tempdb','ReportServer','ReportServerTempDB')
+--and name='WebAnalyticsServiceApplication_ReportingDB_8a119566-448f-48c5-807e-76776681a1a8'
+
+ 
+OPEN db_cursor   
+FETCH NEXT FROM db_cursor INTO @DB_NAME   
+
+ 
+WHILE @@FETCH_STATUS = 0   
+BEGIN      
+      SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+	   'SELECT '''+@DB_NAME+''' as DataBaseName, 
+				name AS FileName, physical_name,
+				cast(size/128.0 as varchar(1000)) AS CurrentSizeMB				
+				FROM sys.database_files 
+				where type_desc <>''LOG''				
+				'
+				--PRINT @TSQL;
+				INSERT INTO @TBL_USERS([DataBaseName],[FileName],[Physical_name],[CurrentSizeMB])
+				EXECUTE sp_executesql @TSQL;
+ 
+       FETCH NEXT FROM db_cursor INTO @DB_NAME   
+END   
+
+ 
+CLOSE db_cursor   
+DEALLOCATE db_cursor
+
+SELECT
+	[DataBaseName],
+	[FileName] AS [LogicalName],
+	[Physical_name],
+	replace([CurrentSizeMB],'.',',') [CurrentSizeMB]
+FROM 
+	@TBL_USERS AS A
+order by 
+[CurrentSizeMB] desc
+
+GO

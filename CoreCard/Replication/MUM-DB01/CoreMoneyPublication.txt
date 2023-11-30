@@ -1,0 +1,145 @@
+-- Enabling the replication database
+use master
+exec sp_replicationdboption @dbname = N'CoreMoney', @optname = N'publish', @value = N'true'
+GO
+
+exec [CoreMoney].sys.sp_addlogreader_agent @job_login = null, @job_password = null, @publisher_security_mode = 1
+GO
+-- Adding the transactional publication
+use [CoreMoney]
+exec sp_addpublication @publication = N'Trans_PUB_CoreMoneyReportPUB', @description = N'Transactional publication of database ''CoreMoney'' from Publisher ''MUM-DB01''.', @sync_method = N'concurrent', @retention = 0, @allow_push = N'true', @allow_pull = N'true', @allow_anonymous = N'true', @enabled_for_internet = N'false', @snapshot_in_defaultfolder = N'true', @compress_snapshot = N'false', @ftp_port = 21, @ftp_login = N'anonymous', @allow_subscription_copy = N'false', @add_to_active_directory = N'false', @repl_freq = N'continuous', @status = N'active', @independent_agent = N'true', @immediate_sync = N'true', @allow_sync_tran = N'false', @autogen_sync_procs = N'false', @allow_queued_tran = N'false', @allow_dts = N'false', @replicate_ddl = 1, @allow_initialize_from_backup = N'false', @enabled_for_p2p = N'false', @enabled_for_het_sub = N'false'
+GO
+
+
+exec sp_addpublication_snapshot @publication = N'Trans_PUB_CoreMoneyReportPUB', @frequency_type = 1, @frequency_interval = 0, @frequency_relative_interval = 0, @frequency_recurrence_factor = 0, @frequency_subday = 0, @frequency_subday_interval = 0, @active_start_time_of_day = 0, @active_end_time_of_day = 235959, @active_start_date = 0, @active_end_date = 0, @job_login = null, @job_password = null, @publisher_security_mode = 1
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'sa'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'BUILTIN\Administrators'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\mauricio.rodriguez'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\pradhumn.jain'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'procind\configuser'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\satyam.gupta'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\ankush.verma'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\nosina.prabhakar'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\manohar.reddy'
+
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\jagpal.singh'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\anil.athota'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\harsha.marri'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\svc_ppgccsql$'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\vinay.sarva'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\tarun.parashar'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\niranjan.bolisetti'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\simon.bejarano'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\vinod.cj'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'PROCIND\grpDBAProject'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'AZTEST\svc_ppg_azt$'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'AZTEST\simon.bejarano'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'AZTEST\Vinod.cj'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'NT SERVICE\Winmgmt'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'NT SERVICE\SQLWriter'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'NT SERVICE\SQLSERVERAGENT'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'NT Service\MSSQLSERVER'
+GO
+exec sp_grant_publication_access @publication = N'Trans_PUB_CoreMoneyReportPUB', @login = N'srsuser'
+GO
+
+-- Adding the transactional articles
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'CMSCaseDefinition', @source_owner = N'dbo', @source_object = N'CMSCaseDefinition', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'drop', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'CMSCaseDefinition', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboCMSCaseDefinition]', @del_cmd = N'CALL [sp_MSdel_dboCMSCaseDefinition]', @upd_cmd = N'SCALL [sp_MSupd_dboCMSCaseDefinition]'
+GO
+
+
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'CMSCaseLogInformation', @source_owner = N'dbo', @source_object = N'CMSCaseLogInformation', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'CMSCaseLogInformation', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboCMSCaseLogInformation]', @del_cmd = N'CALL [sp_MSdel_dboCMSCaseLogInformation]', @upd_cmd = N'SCALL [sp_MSupd_dboCMSCaseLogInformation]'
+GO
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'CMSCDLifeCycle', @source_owner = N'dbo', @source_object = N'CMSCDLifeCycle', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'CMSCDLifeCycle', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboCMSCDLifeCycle]', @del_cmd = N'CALL [sp_MSdel_dboCMSCDLifeCycle]', @upd_cmd = N'SCALL [sp_MSupd_dboCMSCDLifeCycle]'
+GO
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'CMSDisputeRequest', @source_owner = N'dbo', @source_object = N'CMSDisputeRequest', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'CMSDisputeRequest', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboCMSDisputeRequest]', @del_cmd = N'CALL [sp_MSdel_dboCMSDisputeRequest]', @upd_cmd = N'SCALL [sp_MSupd_dboCMSDisputeRequest]'
+GO
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'CMSReasonCodeManagement', @source_owner = N'dbo', @source_object = N'CMSReasonCodeManagement', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'none', @destination_table = N'CMSReasonCodeManagement', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboCMSReasonCodeManagement]', @del_cmd = N'CALL [sp_MSdel_dboCMSReasonCodeManagement]', @upd_cmd = N'SCALL [sp_MSupd_dboCMSReasonCodeManagement]'
+GO
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @source_owner = N'dbo', @source_object = N'FVAdminPortal_UserIPAddress', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'FVAdminPortal_UserIPAddress', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'true', @ins_cmd = N'CALL [sp_MSins_dboFVAdminPortal_UserIPAddress]', @del_cmd = N'CALL [sp_MSdel_dboFVAdminPortal_UserIPAddress]', @upd_cmd = N'SCALL [sp_MSupd_dboFVAdminPortal_UserIPAddress]'
+
+-- Adding the article's partition column(s)
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'RowId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'ClientID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'CreateDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'CheckDay', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'AllowCookies', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'IPByPassFlag', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'ChannelID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevelClientList', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'SubUserType', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'DOB', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'Email1', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'EmployerAddressLine1', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'EmployerAddressLine2', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'EmployerAddressCity', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'EmployerAddressState', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'Country', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'postalcode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevelChanelList', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'ApproveBulkRequest', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'InstitutionId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevelInstitutionList', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevelAgentList', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'AgentId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'AlertStatus', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'BusinessAccounts', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevelBusinessAccounts', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'ProgramManagers', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevelProgramManagers', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'AllowForcePost', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'AgreedTNCDate', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'SMSaddress', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'MobileNumber', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'ValidateIPLoginValidation', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'MobilePhCCode', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'BranchID', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'UserLevel', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'BranchID_Main', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'MobCodeCountry', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'DisableDisputeLifecycleSteps', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'LastSelectedLaguage', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+exec sp_articlecolumn @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @column = N'AgencyId', @operation = N'add', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+
+-- Adding the article synchronization object
+exec sp_articleview @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'FVAdminPortal_UserIPAddress', @view_name = N'syncobj_0x3742464643343444', @filter_clause = N'', @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
+GO
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N't_dba_replication_latency_Check_CoreMoney', @source_owner = N'dbo', @source_object = N't_dba_replication_latency_Check_CoreMoney', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'drop', @schema_option = 0x000001400C0350DF, @identityrangemanagementoption = N'manual', @destination_table = N't_dba_replication_latency_Check_CoreMoney', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [dbo].[sp_MSins_dbot_dba_replication_latency_Check_CoreMoney]', @del_cmd = N'CALL [dbo].[sp_MSdel_dbot_dba_replication_latency_Check_CoreMoney]', @upd_cmd = N'SCALL [dbo].[sp_MSupd_dbot_dba_replication_latency_Check_CoreMoney]'
+GO
+use [CoreMoney]
+exec sp_addarticle @publication = N'Trans_PUB_CoreMoneyReportPUB', @article = N'UserRoleSetup', @source_owner = N'dbo', @source_object = N'UserRoleSetup', @type = N'logbased', @description = N'', @creation_script = N'', @pre_creation_cmd = N'truncate', @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', @destination_table = N'UserRoleSetup', @destination_owner = N'dbo', @status = 24, @vertical_partition = N'false', @ins_cmd = N'CALL [sp_MSins_dboUserRoleSetup]', @del_cmd = N'CALL [sp_MSdel_dboUserRoleSetup]', @upd_cmd = N'SCALL [sp_MSupd_dboUserRoleSetup]'
+GO

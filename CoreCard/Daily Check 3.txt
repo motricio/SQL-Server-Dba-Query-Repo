@@ -1,0 +1,27 @@
+WITH LastBackUp AS
+(
+SELECT  bs.database_name,
+        bs.backup_size,
+        bs.compressed_backup_size,
+        bs.backup_start_date,
+        bs.backup_finish_date,
+        bmf.physical_device_name,
+        Position = ROW_NUMBER() OVER( PARTITION BY bs.database_name ORDER BY bs.backup_start_date DESC )
+FROM  msdb.dbo.backupmediafamily bmf
+JOIN msdb.dbo.backupmediaset bms ON bmf.media_set_id = bms.media_set_id
+JOIN msdb.dbo.backupset bs ON bms.media_set_id = bs.media_set_id
+WHERE   bs.[type] = 'D'--— change to L for transaction logs
+AND bs.is_copy_only = 0
+and bs.backup_start_date > GETDATE()-8
+)
+SELECT database_name AS DatabaseName
+, CAST(backup_size/1024.0/1024/1024 AS DECIMAL(10, 2)) AS BackupSizeGB
+, CAST(compressed_backup_size/1024.0/1024/1024 AS DECIMAL(10, 2)) AS CompressedSizeGB   
+, backup_start_date AS BackupStartDate
+, backup_finish_date AS BackupEndDate
+, CAST(backup_finish_date - backup_start_date AS TIME) AS AmtTimeToBkup
+, physical_device_name AS BackupDeviceName
+, 'restore verifyonly from disk='''+physical_device_name+'''' as Script
+FROM LastBackUp
+--WHERE Position = 1
+ORDER BY database_name, backup_start_date

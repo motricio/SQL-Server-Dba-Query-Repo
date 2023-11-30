@@ -1,0 +1,11 @@
+SELECT a.name, b.name as Operator, b.email_address,
+'
+EXEC msdb.dbo.sp_update_job @job_id=N'''+cast(job_id as varchar(200))+''', 
+		@notify_level_email=2, 
+		@notify_level_netsend=2, 
+		@notify_level_page=2, 
+		@notify_email_operator_name=N''NotificacionJobsCEET''
+',*
+ FROM dbo.sysjobs_view a
+ left join dbo.sysoperators b on (a.notify_email_operator_id = b.id)
+ where a.category_id <>3 and a.notify_email_operator_id =1 order by 1 asc

@@ -1,0 +1,104 @@
+USE master;
+
+DECLARE @DB_NAME AS VARCHAR(200)='';
+DECLARE @MEMBER_OF AS VARCHAR(200)='';
+DECLARE @TSQL AS NVARCHAR(4000)='';
+
+If OBJECT_ID('tempdb.dbo.#TABLE_DBS') Is not null
+	Drop table tempdb.dbo.#TABLE_DBS
+
+
+CREATE TABLE tempdb.dbo.#TABLE_DBS
+	(
+		[DataBaseName] varchar(1000),
+		[FileName] varchar(2000),
+		[FileGroup] varchar(2000),
+		[Physical_name] varchar(2000),
+		[CurrentSizeMB] varchar(200),
+		[FreeSpaceMB] varchar(200),
+		[UsageMB] varchar(200),
+		[Max_size] varchar(200),
+		[%FreeSpace] varchar(200),
+		[RecommendedReSizeMB] varchar(200),
+		[RecoveredDiskSpaceMB] varchar(200),
+		[ScriptCompactDBFile] varchar(4000)
+	);
+
+ 
+DECLARE db_cursor CURSOR FOR  
+SELECT 
+--top 1
+name 
+FROM master.dbo.sysdatabases 
+WHERE name NOT IN ('master','model','msdb','tempdb','ReportServer','ReportServerTempDB')
+--and name='WebAnalyticsServiceApplication_ReportingDB_8a119566-448f-48c5-807e-76776681a1a8'
+
+ 
+OPEN db_cursor   
+FETCH NEXT FROM db_cursor INTO @DB_NAME   
+
+ 
+WHILE @@FETCH_STATUS = 0   
+BEGIN      
+      SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+		'SELECT '''+@DB_NAME+''' as DataBaseName, 
+				DF.name AS FileName,
+				FG.name as [FileGroup], 
+				DF.physical_name,
+				CurrentSizeMB,				
+				FreeSpaceMB,
+				UsageMB,
+				Max_size,
+				[%FreeSpace],
+				[RecommendedReSizeMB],
+				[RecoveredDiskSpaceMB],
+				''USE ['+@DB_NAME+ '];
+				DBCC SHRINKFILE 
+				(N''''''+ DF.name +'''''',''+ CAST(cast(RecommendedReSizeMB as INT) AS NVARCHAR(200)) +'');''
+				AS [ScriptCompactDBFile]
+				FROM sys.database_files AS DF
+				LEFT JOIN sys.filegroups AS FG ON (DF.data_space_id = FG.data_space_id)
+				CROSS APPLY(SELECT DF.size/128.0 AS CurrentSizeMB) AS A
+				CROSS APPLY(SELECT CurrentSizeMB - CAST(FILEPROPERTY(DF.name, ''SpaceUsed'') AS INT)/128.0 AS FreeSpaceMB) AS B
+				CROSS APPLY(SELECT CurrentSizeMB - FreeSpaceMB AS UsageMB) AS C
+				CROSS APPLY(SELECT (FreeSpaceMB/CurrentSizeMB*100) AS [%FreeSpace]) AS D
+				CROSS APPLY(SELECT (CurrentSizeMB - FreeSpaceMB + 10) AS [RecommendedReSizeMB]) AS E
+				CROSS APPLY(SELECT (CurrentSizeMB - RecommendedReSizeMB) as [RecoveredDiskSpaceMB]) AS F
+				where DF.type_desc <>''LOG''
+				order by 
+				[RecoveredDiskSpaceMB] desc
+				'
+	   
+				--PRINT @TSQL;
+				INSERT INTO tempdb.dbo.#TABLE_DBS([DataBaseName],[FileName],[FileGroup],[Physical_name],[CurrentSizeMB],[FreeSpaceMB],[UsageMB],[Max_size],[%FreeSpace],[RecommendedReSizeMB],[RecoveredDiskSpaceMB],[ScriptCompactDBFile])
+				EXECUTE sp_executesql @TSQL;
+ 
+       FETCH NEXT FROM db_cursor INTO @DB_NAME   
+END   
+
+ 
+CLOSE db_cursor   
+DEALLOCATE db_cursor
+
+SELECT
+	[DataBaseName],
+	--[FileName] AS [LogicalName],
+	--[FileGroup],
+	--[Physical_name],
+	SUM(cast([CurrentSizeMB] as decimal(30,6))) as [CurrentSizeMB],
+	sum(cast([FreeSpaceMB]as decimal(30,6))) as [FreeSpaceMB]
+	--[UsageMB],
+	--[Max_size],
+	--[%FreeSpace],
+	--[RecommendedReSizeMB],
+	--cast([RecoveredDiskSpaceMB] as decimal(30,6)) as [RecoveredDiskSpaceMB],
+	--[ScriptCompactDBFile]
+FROM 
+	tempdb.dbo.#TABLE_DBS AS A
+	--where Physical_name like '%W:%'
+	--where DataBaseName='SIF'
+	--and FILEGROUPPROPERTY='FG_SIF_JOURNAL_SERVICES_T1'
+group by [DataBaseName]
+order by 1 asc 
+drop table tempdb.dbo.#TABLE_DBS

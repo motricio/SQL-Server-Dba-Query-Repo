@@ -1,0 +1,5 @@
+xp_cmdshell 'sc query MSSQLSERVER'
+
+xp_cmdshell 'sc query SQLSERVERAGENT'
+
+xp_cmdshell 'NET START SQLSERVERAGENT'

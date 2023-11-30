@@ -1,0 +1,15 @@
+CMD sqlservr.exe -m -sSQLSERVER2012
+
+CMD sqlcmd -S SQLSERVER2012
+
+CREATE LOGIN telmex_mon WITH PASSWORD = '0v3rv13w', DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF
+GO  
+
+EXEC sp_addsrvrolemember @loginame = N'telmex_mon', @rolename = N'sysadmin'
+GO
+
+EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', N'Software\Microsoft\MSSQLServer\MSSQLServer', N'LoginMode', REG_DWORD, 2
+GO
+
+EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', N'Software\Microsoft\Microsoft SQL Server\MSSQL11.SQLSERVER2012\MSSQLServer', N'LoginMode', REG_DWORD, 2
+GO

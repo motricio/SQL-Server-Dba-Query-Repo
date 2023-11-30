@@ -1,0 +1,7 @@
+select @@SERVERNAME
+
+
+sp_dropserver <old_machine_name>;
+GO
+sp_addserver <new_machine_name>, local;
+GO

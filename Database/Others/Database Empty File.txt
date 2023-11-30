@@ -1,0 +1,6 @@
+USE [DataFileRemoval];
+go
+DBCC SHRINKFILE ('DataFileRemoval_2', EMPTYFILE);
+
+
+ALTER DATABASE [DataFileRemoval] REMOVE FILE [DataFileRemoval_2]

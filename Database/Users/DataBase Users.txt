@@ -1,0 +1,77 @@
+-- Obtener los usuarios de cada base de datos de la Instancia
+-- Con cada permiso de membresia en Roles de Servidor
+
+USE master;
+
+DECLARE @DB_NAME AS VARCHAR(2000)='';
+DECLARE @MEMBER_OF AS VARCHAR(50)='';
+DECLARE @TSQL AS NVARCHAR(4000)='';
+
+DECLARE @TBL_USERS AS TABLE
+	(
+		[DB_USERS] varchar(50),
+		[MEMBER_OF] varchar(50),
+		[DB_NAME] varchar(2000)
+	);
+
+DECLARE CURSOR_1 CURSOR
+    FOR
+	SELECT DISTINCT
+		DB_NAME(A.DATABASE_ID) AS [DATABASE NAME]
+				FROM SYS.MASTER_FILES A
+		INNER JOIN SYSDATABASES B 
+		ON (A.DATABASE_ID = B.DBID)
+		WHERE A.DATABASE_ID>4
+		AND A.PHYSICAL_NAME NOT LIKE '%.LDF%'
+		--AND B.status=65544
+		ORDER BY 
+		DB_NAME(A.DATABASE_ID)
+
+OPEN CURSOR_1;
+FETCH NEXT FROM CURSOR_1 INTO @DB_NAME
+WHILE @@FETCH_STATUS = 0
+    BEGIN
+		SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+		'SELECT 
+			USER_NAME(MEMBERUID) AS [USER], 
+			USER_NAME(GROUPUID) AS [ROLE MEMBER OF],
+			'''+@DB_NAME+''' AS [DB_NAME]
+		FROM 
+			sys.sysmembers AS A
+			INNER JOIN sys.sysusers AS B
+			ON (A.MEMBERUID = B.UID)
+		WHERE 
+			B.ISLOGIN=1 
+			OR B.ISNTNAME = 1 
+			OR B.ISNTGROUP=1 
+			OR B.ISSQLUSER=1
+			AND B.HASDBACCESS=1
+			AND B.uid <> 1
+			--and login
+		ORDER BY [USER],[ROLE MEMBER OF]
+		'
+		--print @DB_NAME;
+		INSERT INTO @TBL_USERS([DB_USERS],[MEMBER_OF],[DB_NAME])		
+		EXECUTE sp_executesql @TSQL;		
+
+		FETCH NEXT FROM CURSOR_1 INTO @DB_NAME
+    END
+CLOSE CURSOR_1;
+DEALLOCATE CURSOR_1;
+
+SELECT
+	[A].[DB_NAME],
+	[A].[DB_USERS],
+	[A].[MEMBER_OF],
+	'USE ['+ [A].[DB_NAME]+']; ' +'CREATE USER ['+[A].[DB_USERS]+'] FOR LOGIN ['+[A].[DB_USERS]+']'	 as [CREATE_USER],
+	'ALTER ROLE ['+[A].[MEMBER_OF]+'] ADD MEMBER ['+[A].[DB_USERS]+']' as [ADD_USER_ROLE]
+FROM 
+	@TBL_USERS AS A
+WHERE
+	[A].[DB_USERS] NOT LIKE '%dbo%'
+	--and A.DB_USERS like '%daniel.vargas%'	
+ORDER BY 
+	[A].[DB_NAME]
+
+GO

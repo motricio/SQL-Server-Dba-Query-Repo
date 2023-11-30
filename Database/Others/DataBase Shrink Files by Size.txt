@@ -1,0 +1,114 @@
+SET NOCOUNT ON;
+USE master;
+
+DECLARE @DB_NAME AS VARCHAR(200);
+DECLARE @DB_NAME_FILTER AS VARCHAR(200);
+DECLARE @MEMBER_OF AS VARCHAR(200);
+DECLARE @TSQL AS NVARCHAR(4000);
+
+--SET @DB_NAME_FILTER='SPOKE_Transact'
+SET @DB_NAME=''
+SET @MEMBER_OF=''
+SET @TSQL=''
+CREATE TABLE #TBL_USERS 
+	(
+		[DataBaseName] varchar(1000),
+		[FileName] varchar(2000),
+		[FileGroup] varchar(2000),
+		[Physical_name] varchar(2000),
+		[CurrentSizeMB] varchar(200),
+		[FreeSpaceMB] varchar(200),
+		[UsageMB] varchar(200),
+		[Max_size] varchar(200),
+		[%FreeSpace] varchar(200),
+		[RecommendedReSizeMB] varchar(200),
+		[RecoveredDiskSpaceMB] varchar(200),
+		[ScriptCompactDBFile] varchar(4000)
+	);
+
+ 
+DECLARE db_cursor CURSOR FOR  
+SELECT 
+--top 1
+name 
+FROM master.dbo.sysdatabases 
+WHERE name NOT IN ('master','model','msdb','tempdb','ReportServer','ReportServerTempDB')
+--and name = @DB_NAME_FILTER
+--and name='WebAnalyticsServiceApplication_ReportingDB_8a119566-448f-48c5-807e-76776681a1a8'
+
+ 
+OPEN db_cursor   
+FETCH NEXT FROM db_cursor INTO @DB_NAME   
+
+ 
+WHILE @@FETCH_STATUS = 0   
+BEGIN      
+      SET @TSQL='USE [' + @DB_NAME+'];';
+		SET @TSQL = @TSQL+
+		'SELECT '''+@DB_NAME+''' as DataBaseName, 
+				DF.name AS FileName,
+				FG.name as [FileGroup], 
+				DF.physical_name,
+				CurrentSizeMB,				
+				FreeSpaceMB,
+				UsageMB,
+				DF.max_size,
+				[%FreeSpace],
+				[RecommendedReSizeMB],
+				[RecoveredDiskSpaceMB],
+				''USE ['+@DB_NAME+ '];
+				DBCC SHRINKFILE 
+				(N''''''+ DF.name +'''''',''+ CAST(cast(RecommendedReSizeMB as INT) AS NVARCHAR(200)) +'');''
+				AS [ScriptCompactDBFile]
+				FROM sys.master_files AS DF
+				LEFT JOIN sys.filegroups AS FG ON (DF.data_space_id = FG.data_space_id)
+				CROSS APPLY(SELECT CAST(DF.size AS decimal(16,2))*8/1024 AS CurrentSizeMB) AS A
+				
+				CROSS APPLY(SELECT CAST(FILEPROPERTY(DF.name, ''SpaceUsed'') AS decimal(16,2))*8/1024 AS UsageMB) AS C
+				
+				CROSS APPLY(SELECT (CurrentSizeMB - UsageMB) AS FreeSpaceMB) AS B
+
+				CROSS APPLY(SELECT (cast(FreeSpaceMB as decimal(16,2))/cast(CurrentSizeMB as decimal(16,2))*100) AS [%FreeSpace]) AS D
+				CROSS APPLY(SELECT (CurrentSizeMB - FreeSpaceMB + 10) AS [RecommendedReSizeMB]) AS E
+				CROSS APPLY(SELECT (CurrentSizeMB - RecommendedReSizeMB) as [RecoveredDiskSpaceMB]) AS F
+				where DF.type = 0
+				and DB_NAME(DF.database_id)= '''+@DB_NAME+'''
+				order by 
+				[RecoveredDiskSpaceMB] desc
+				'
+	   
+				PRINT @TSQL;
+				INSERT INTO #TBL_USERS([DataBaseName],[FileName],[FileGroup],[Physical_name],[CurrentSizeMB],[FreeSpaceMB],[UsageMB],[Max_size],[%FreeSpace],[RecommendedReSizeMB],[RecoveredDiskSpaceMB],[ScriptCompactDBFile])
+				EXECUTE sp_executesql @TSQL;
+ 
+       FETCH NEXT FROM db_cursor INTO @DB_NAME   
+END   
+
+ 
+CLOSE db_cursor   
+DEALLOCATE db_cursor
+
+SELECT
+	[DataBaseName],
+	[FileName] AS [LogicalName],
+	[FileGroup],
+	[Physical_name],
+	cast([CurrentSizeMB]as decimal(30,2)) as [CurrentSizeMB],
+	cast([UsageMB]as decimal(30,2)) as [UsageMB],
+	cast([FreeSpaceMB]as decimal(30,2)) as [FreeSpaceMB],
+	cast([Max_size]as decimal(30,2)) as [Max_size],
+	cast([%FreeSpace]as decimal(30,2)) as [%FreeSpace],
+	cast([RecommendedReSizeMB]as decimal(30,2)) as [RecommendedReSizeMB],
+	cast([RecoveredDiskSpaceMB] as decimal(30,2)) as [RecoveredDiskSpaceMB],
+	[ScriptCompactDBFile]
+FROM 
+	#TBL_USERS AS A
+	--where Physical_name like '%Y:\SPOKE_TRANSACT\SPOKE_DATAIII\MS_SQL\DF_DATA_SHIPPING_TRACE_EVENT_T1.ndf%'
+	--where DataBaseName='SPN_Reportes'
+	--where FileGroup like'FG_DATA_SHIPPING_TRACE_EVENT%'
+order by 
+FileGroup asc
+GO
+
+drop TABLE #TBL_USERS;
+

@@ -1,0 +1,11 @@
+-- Detener Jobs en ejecucion 
+
+USE msdb ;
+GO
+
+EXEC dbo.sp_stop_job
+    N'JOB_NAME' ;
+GO
+
+-- Validar estado actual de un Job
+exec msdb.dbo.sp_help_job @job_name = N'JOB_NAME'

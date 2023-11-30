@@ -1,0 +1,1 @@
+Get-ChildItem G:\ -r|sort -descending -property length | select -first 20 name, DirectoryName, @{Name="MB";Expression={[Math]::round($_.length / 1MB, 2)}} | Out-GridView

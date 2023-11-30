@@ -1,0 +1,33 @@
+Database Mirroring login attempt failed with error: 
+'Connection handshake failed. The certificate used by this endpoint was not found: Certificate expired. 
+Use DBCC CHECKDB in master database to verify the metadata integrity of the endpoints. State 85.'.
+
+1) on M1: create a new certificate in [master]
+
+USE master;
+CREATE CERTIFICATE ct_mirror_sherlockdb1 
+   WITH SUBJECT = 'ct_mirror_sherlockdb1 Certificate mirror', EXPIRY_DATE = '20301031';
+GO
+
+2) on M1: export (backup) the public key part of the cert
+
+BACKUP CERTIFICATE ct_mirror_sherlockdb1 TO FILE = 'C:\tools\ct_mirror_sherlockdb1.cer';
+GO
+
+3) on M2: restore the cert, under the same owner (authorization) as the old cert on the peer
+
+CREATE CERTIFICATE ct_mirror_sherlockdb1 
+   AUTHORIZATION LoginMirror  
+   FROM FILE = 'C:\Tools\ct_mirror_sherlockdb1.cer'  
+GO
+
+4) on M1: alter the endpoint to use the new cert (ALTER ENDPOINT ... FOR DATABASE_MIRRORING (AUTHENTICATION = [new_cert])
+
+ALTER ENDPOINT [EP_mirror_sherlockdb1] FOR DATABASE_MIRRORING (AUTHENTICATION = CERTIFICATE [ct_mirror_sherlockdb1])
+
+5) on M1: drop the old cert
+DROP CERTIFICATE [name]
+
+6) on M2: drop the old cert
+DROP CERTIFICATE [name]
+

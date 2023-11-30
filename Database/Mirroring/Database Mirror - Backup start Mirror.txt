@@ -1,0 +1,7 @@
+BACKUP DATABASE [seven] TO  DISK = N'T:\BK\seven.bak' WITH NOFORMAT, NOINIT,  
+NAME = N'seven-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, COMPRESSION,  STATS = 10
+GO
+
+
+BACKUP LOG  [seven] TO DISK = 'T:\BK\seven_log_01.TRN' WITH COMPRESSION
+GO

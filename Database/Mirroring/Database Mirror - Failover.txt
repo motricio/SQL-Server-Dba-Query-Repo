@@ -1,0 +1,11 @@
+select 
+ --DB_NAME(database_id) DatabaseName
+--,mirroring_state_desc
+  'ALTER DATABASE ['+DB_NAME(database_id)+'] SET SAFETY FULL' + CHAR(10) + 'GO' as [Step1 Failover]
+ --,'ALTER DATABASE ['+DB_NAME(database_id)+'] SET PARTNER FAILOVER'+ CHAR(10) + 'GO' as [Step2 Failover] 
+--,'ALTER DATABASE ['+DB_NAME(database_id)+'] SET SAFETY OFF;'  + CHAR(10) + 'GO' as [Step2 High Performance]
+--,'ALTER DATABASE ['+DB_NAME(database_id)+'] SET PARTNER OFF;'  + CHAR(10) + 'GO' as [Broke Mirror]
+
+from sys.database_mirroring
+where mirroring_state_desc is not null
+
