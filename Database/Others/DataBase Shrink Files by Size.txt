@@ -98,8 +98,8 @@ SELECT
 	cast([%FreeSpace]as decimal(30,2)) as [%FreeSpace],
 	cast([RecommendedReSizeMB]as decimal(30,2)) as [RecommendedReSizeMB],
 	cast([RecoveredDiskSpaceMB] as decimal(30,2)) as [RecoveredDiskSpaceMB],
-	'ALTER DATABASE [CoreIssue] MODIFY FILE ( NAME = N'''+[FileName]+''', MAXSIZE = '+cast( ( (cast([CurrentSizeMB] as decimal(30))*1024) ) as varchar(10)) +'KB);' as [Script_CapFile],	
-	'ALTER DATABASE [CoreIssue] ADD FILE ( NAME = N'''+[FileName]+'_P'', FILENAME = N''P:\SQLDATA\CoreIssue\Partition\'+[FileName]+'_P.ndf'' , SIZE = 10485760KB , FILEGROWTH = 2097152KB ) TO FILEGROUP ['+[FileGroup]+'];' as [Script_AddFiletoDrive],
+	'ALTER DATABASE ['+[DataBaseName]+'] MODIFY FILE ( NAME = N'''+[FileName]+''', MAXSIZE = '+cast( ( (cast([CurrentSizeMB] as decimal(30))*1024) ) as varchar(10)) +'KB);' as [Script_CapFile],	
+	'ALTER DATABASE ['+[DataBaseName]+'] ADD FILE ( NAME = N'''+[FileName]+'_P'', FILENAME = N''P:\SQLDATA\CoreIssue\Partition\'+[FileName]+'_P.ndf'' , SIZE = 10485760KB , FILEGROWTH = 2097152KB ) TO FILEGROUP ['+[FileGroup]+'];' as [Script_AddFiletoDrive],
 	[Script_CompactDBFile]
 FROM 
 	#TBL_USERS AS A
