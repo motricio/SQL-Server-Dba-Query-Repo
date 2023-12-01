@@ -23,14 +23,12 @@ CREATE TABLE #TBL_USERS
 		[%FreeSpace] varchar(200),
 		[RecommendedReSizeMB] varchar(200),
 		[RecoveredDiskSpaceMB] varchar(200),
-		[ScriptCompactDBFile] varchar(4000)
+		[Script_CompactDBFile] varchar(4000)
 	);
 
  
 DECLARE db_cursor CURSOR FOR  
-SELECT 
---top 1
-name 
+SELECT name 
 FROM master.dbo.sysdatabases 
 WHERE name NOT IN ('master','model','msdb','tempdb','ReportServer','ReportServerTempDB')
 --and name = @DB_NAME_FILTER
@@ -52,7 +50,7 @@ BEGIN
 				CurrentSizeMB,				
 				FreeSpaceMB,
 				UsageMB,
-				DF.max_size,
+				CASE max_size WHEN -1 THEN -1 ELSE CAST((CAST (max_size AS BIGINT)) * 8 / 1024 AS VARCHAR(10)) END AS max_size_mb,
 				[%FreeSpace],
 				[RecommendedReSizeMB],
 				[RecoveredDiskSpaceMB],
@@ -78,7 +76,7 @@ BEGIN
 				'
 	   
 				PRINT @TSQL;
-				INSERT INTO #TBL_USERS([DataBaseName],[FileName],[FileGroup],[Physical_name],[CurrentSizeMB],[FreeSpaceMB],[UsageMB],[Max_size],[%FreeSpace],[RecommendedReSizeMB],[RecoveredDiskSpaceMB],[ScriptCompactDBFile])
+				INSERT INTO #TBL_USERS([DataBaseName],[FileName],[FileGroup],[Physical_name],[CurrentSizeMB],[FreeSpaceMB],[UsageMB],[Max_size],[%FreeSpace],[RecommendedReSizeMB],[RecoveredDiskSpaceMB],[Script_CompactDBFile])
 				EXECUTE sp_executesql @TSQL;
  
        FETCH NEXT FROM db_cursor INTO @DB_NAME   
@@ -93,22 +91,23 @@ SELECT
 	[FileName] AS [LogicalName],
 	[FileGroup],
 	[Physical_name],
-	cast([CurrentSizeMB]as decimal(30,2)) as [CurrentSizeMB],
 	cast([UsageMB]as decimal(30,2)) as [UsageMB],
 	cast([FreeSpaceMB]as decimal(30,2)) as [FreeSpaceMB],
-	cast([Max_size]as decimal(30,2)) as [Max_size],
+	cast([CurrentSizeMB]as decimal(30,2)) as [CurrentSizeMB],
+	cast([Max_size]as decimal(30,2)) as [MaxSizeMB],
 	cast([%FreeSpace]as decimal(30,2)) as [%FreeSpace],
 	cast([RecommendedReSizeMB]as decimal(30,2)) as [RecommendedReSizeMB],
 	cast([RecoveredDiskSpaceMB] as decimal(30,2)) as [RecoveredDiskSpaceMB],
-	[ScriptCompactDBFile]
+	'ALTER DATABASE [CoreIssue] MODIFY FILE ( NAME = N'''+[FileName]+''', MAXSIZE = '+cast( ( (cast([CurrentSizeMB] as decimal(30))*1024) ) as varchar(10)) +'KB);' as [Script_CapFile],	
+	'ALTER DATABASE [CoreIssue] ADD FILE ( NAME = N'''+[FileName]+'_P'', FILENAME = N''P:\SQLDATA\CoreIssue\Partition\'+[FileName]+'_P.ndf'' , SIZE = 10485760KB , FILEGROWTH = 2097152KB ) TO FILEGROUP ['+[FileGroup]+'];' as [Script_AddFiletoDrive],
+	[Script_CompactDBFile]
 FROM 
 	#TBL_USERS AS A
-	--where Physical_name like '%Y:\SPOKE_TRANSACT\SPOKE_DATAIII\MS_SQL\DF_DATA_SHIPPING_TRACE_EVENT_T1.ndf%'
-	--where DataBaseName='SPN_Reportes'
+	where Physical_name like 'M:%'
+	and DataBaseName='CoreIssue'
 	--where FileGroup like'FG_DATA_SHIPPING_TRACE_EVENT%'
 order by 
 FileGroup asc
 GO
 
 drop TABLE #TBL_USERS;
-
