@@ -1,0 +1,32 @@
+USE [Novasoft_Tipiel2008];
+
+SELECT  a.execution_count ,
+	a.creation_time,
+    OBJECT_NAME(objectid) Name,
+    query_text = SUBSTRING( 
+    b.text, 
+    a.statement_start_offset/2, 
+    (	CASE WHEN a.statement_end_offset = -1 
+    	THEN len(convert(nvarchar(max), b.text)) * 2 
+    	ELSE a.statement_end_offset 
+    	END - a.statement_start_offset)/2
+    ) ,
+    b.dbid ,
+    dbname = db_name(b.dbid) ,
+    b.objectid ,
+    
+    a.last_execution_time,
+    a.*
+FROM    		sys.dm_exec_query_stats a 
+CROSS APPLY 	sys.dm_exec_sql_text(a.sql_handle) as b 
+WHERE OBJECT_NAME(objectid) = 'sp_gen_generapermisos'
+ORDER BY a.last_execution_time DESC
+
+
+select b.name, a.last_execution_time
+from sys.dm_exec_procedure_stats a 
+inner join sys.objects b on a.object_id = b.object_id 
+where DB_NAME(a.database_ID) = 'Novasoft_Tipiel2008'
+and YEAR(a.last_execution_time)=2013 and MONTH(a.last_execution_time)=4 and DAY(a.last_execution_time)=26
+and b.name='sp_gen_generapermisos'
+order by a.last_execution_time desc

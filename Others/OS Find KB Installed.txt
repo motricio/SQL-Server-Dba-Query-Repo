@@ -1,0 +1,5 @@
+CMD ADMIN:
+
+systeminfo | findstr KB4041687
+
+dism /online /get-packages | findstr KB4041687

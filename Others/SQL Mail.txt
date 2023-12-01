@@ -1,0 +1,26 @@
+Use msdb
+Go
+
+DECLARE @Content1 as varchar(100);
+DECLARE @Content2 as varchar(100);
+
+SET @Content1 = 'The mail profile was configured correctly on Server: '+ @@SERVERNAME;
+SET @Content2 = 'Automated Success Message from SQL Server: '+ @@SERVERNAME;
+
+EXEC msdb.dbo.sp_send_dbmail
+    @profile_name = 'Notificacion',
+    @recipients = 'basesdatacenter.co@claro.com.co',
+    @body = @Content1,
+    @subject = @Content2;
+
+
+-- Consultar Cola de correos para detectar problemas de envio
+
+go
+BEGIN
+    WAITFOR DELAY '00:00:05';
+	SELECT top 2 * FROM sysmail_log order by log_date desc
+	SELECT top 1 sent_date,* FROM sysmail_mailitems where recipients = 'basesdatacenter.co@claro.com.co' order by 1 desc
+	SELECT top 1 sent_date,sent_status,recipients,copy_recipients,subject,body,query, send_request_user FROM sysmail_sentitems order by sent_date desc
+END;
+GO

@@ -1,0 +1,9 @@
+CMD telnet <server> <smtp port>
+
+helo
+mail from:<davber@eltiempo.com>
+rcpt to:<mauricio.rodrigu.ext@claro.com.co>
+data
+This is a test, please do not respond
+.
+quit

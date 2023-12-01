@@ -1,0 +1,14 @@
+<Backup xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+
+<Object>
+
+<DatabaseID>Sales</DatabaseID>
+
+</Object>
+
+<File>SalesFullBP.abf</File>
+
+<Password>Pa$$w0rd</Password>
+
+</Backup>
+

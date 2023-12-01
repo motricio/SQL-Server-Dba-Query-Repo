@@ -1,0 +1,7 @@
+--disable the CK_Customer_CustomerType constraint 
+ALTER TABLE Sales.Customer NOCHECK CONSTRAINT CK_Customer_CustomerType
+
+--do something
+
+--enable the CK_Customer_CustomerType constraint 
+ALTER TABLE Sales.Customer CHECK CONSTRAINT CK_Customer_CustomerType

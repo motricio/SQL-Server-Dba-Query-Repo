@@ -1,0 +1,32 @@
+
+Add the user(s) in question to the Performance Monitor Users group
+Under Services and Applications, bring up the properties dialog of WMI Control (or run wmimgmt.msc). 
+In the Security tab, highlight Root/CIMV2, click Security; add Performance Monitor Users and enable the options : 
+Enable Account and Remote Enable
+Run dcomcnfg. At Component Services > Computers > My Computer, 
+in the COM security tab of the Properties dialog click "Edit Limits" for both Access Permissions 
+and Launch and Activation Permissions. 
+Add Performance Monitor Users and allow remote access, remote launch, and remote activation.
+Select Windows Management Instrumentation under Component Services > Computers > My Computer > DCOM Config 
+and give Remote Launch and Remote Activation privileges to Performance Monitor Users Group.
+
+Notes:
+
+As an alternatively to step 3 and 4, one can assign the user to the group Distributed COM Users 
+(Tested on Windows Server 2012 R2)
+If the user needs access to all the namespaces, you can set the settings in 2. at the Root level, 
+and recurse the permissions to the sub-namespaces via the Advanced window in Security
+
+
+
+http://msdn.microsoft.com/en-us/library/aa826699(v=vs.85).aspx
+
+refer to above link.
+
+solution: To solve the problem, UAC filtering for local accounts must be disabled by creating the following 
+DWORD registry entry and setting its value to 1:
+
+[HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System] LocalAccountTokenFilterPolicy
+
+reason: "In a workgroup, the account connecting to the remote computer is a local user on that computer.
+Even if the account is in the Administrators group, UAC filtering means that a script runs as a standard user"

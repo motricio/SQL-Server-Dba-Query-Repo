@@ -1,0 +1,4 @@
+P-Shell
+
+Import-Module servermanager
+Add-WindowsFeature telnet-client

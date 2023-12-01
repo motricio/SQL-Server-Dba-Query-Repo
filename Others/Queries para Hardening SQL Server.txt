@@ -1,0 +1,299 @@
+--motor, edicion, collation, cluster, esquema de autenticacion
+select @@version,
+       SERVERPROPERTY('productlevel'),
+	   SERVERPROPERTY('EDITION'),
+	   SERVERPROPERTY('INCLUSTERED'),
+	   SERVERPROPERTY('COLLATION'),
+	   @@SERVERNAME
+
+EXEC xp_loginconfig 'login mode'
+
+--para conectar nuevo servidor al dresden se genera la ruta desde el cmd
+route print
+--verificar las gateways disponibles y crear la ruta
+route add 172.22.161.12 mask 255.255.255.255 'gateway del nuevo servidor' -p
+--hacer ping desde dresden al servidor por IP y por hostname guardado en archivo hosts
+
+--protocolos de conexion usados
+select * from sys.dm_exec_connections order by net_transport;
+
+--Servicios activos
+select * from sys.dm_server_services;
+
+--Si requiere creación de jobs de backups ejecutar en la instancia a instalar el archivo que se encuentra
+-- en la siguiente ruta del servidor dresden: F:\DBA Tools\Scripts SQL 2\Instance\Instance Ola hallengren MaintenanceSolution.txt
+-- crear carpeta BACKUPLOG en la carpeta temp y en la ventana propiedades del job de backup de logs en el step
+--poner la ruta T:\BACKUPLOG
+--luego ir a la opción schedules de la misma ventana y crear una nueva ejecución que se realice todos los días cada 30 minutos
+
+--Service Pack Instalado y versión
+SELECT SERVERPROPERTY('ProductLevel') as SP_installed, SERVERPROPERTY('ProductVersion') as Version;
+
+--Ad Hoc Distributed Queries
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Ad Hoc Distributed Queries';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Ad Hoc Distributed Queries', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE;
+
+--clr enabled
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='clr enabled';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'clr enabled', 0; 
+RECONFIGURE;
+
+--'Cross DB Ownership Chaining' 
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Cross DB Ownership Chaining';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'Cross db ownership chaining', 0; 
+RECONFIGURE;
+
+--'Database Mail XPs
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Database Mail XPs';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Database Mail XPs', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE;
+
+--Ole Automation Procedures
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Ole Automation Procedures';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; EXECUTE sp_configure 'Ole Automation Procedures', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE;
+
+--Remote Access
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Remote Access';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Remote access', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE;
+
+--Remote Admin Connections
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Remote Admin Connections';
+--Si los valores registrados son diferentes a 0 ejecutar
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Remote admin connections', 1; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE; 
+
+--Scan For Startup Procs
+SELECT name, value, value_in_use FROM SYS.configurations WHERE name='Scan For Startup Procs';
+--Si los valores registrados son diferentes a 0 ejecutar
+ EXECUTE sp_configure 'show advanced options', 1; 
+ RECONFIGURE; 
+ EXECUTE sp_configure 'Scan for startup procs', 0; 
+ RECONFIGURE; 
+ GO 
+ EXECUTE sp_configure 'show advanced options', 0; 
+ RECONFIGURE;
+
+--Trustworthy
+SELECT name from sys.databases where is_trustworthy_on=1 and name != 'msdb' and state=0;
+-- Por valores erroneos ejecutar
+ALTER DATABASE <dbname> SET TRUSTWORTHY OFF;
+
+--Disable sa o en el caso de estos servidores cgarcia o agarcia
+SELECT name, is_disabled from sys.server_principals where sid=0x01;
+
+--Se renombra el  usuario "sa"  con el nombre agarcia.
+SELECT name from sys.server_principals where sid=0x01;
+
+
+ --revoke execute on 'xp_availablemedia' to public
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_availablemedia') 
+    AND [type] = 'EX' 
+    AND grantee_principal_id = 0 
+
+	--set the 'xp_cmdshell' option to disabled
+ EXECUTE sp_configure 'show advanced options',1; 
+ RECONFIGURE WITH OVERRIDE; EXECUTE sp_configure 'xp_cmdshell'; 
+
+ --Revoke Execute on 'xp_dirtree' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_dirtree') 
+    AND [type] = 'EX' 
+    AND grantee_principal_id = 0
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_dirtree TO PUBLIC; 
+
+ --Revoke Execute on 'xp_enumgroups' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_enumgroups') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_enumgroups to PUBLIC; 
+
+--Revoke Execute on 'xp_fixeddrives' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_fixeddrives') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_fixeddrives to PUBLIC; 
+
+ --Revoke Execute on 'xp_servicecontrol' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_servicecontrol') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_servicecontrol to PUBLIC; 
+
+ --Revoke Execute on 'xp_subdirs' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_subdirs') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_subdirs to PUBLIC; 
+
+--Revoke Execute on 'xp_regaddmultistring' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_regaddmultistring') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_regaddmultistring to PUBLIC; 
+
+--Revoke Execute on 'xp_regdeletekey' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_regdeletekey') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_regdeletekey to PUBLIC; 
+
+--Revoke Execute on 'xp_regenumvalues' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_regenumvalues') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_regenumvalues to PUBLIC; 
+
+--Revoke Execute on 'xp_regremovemultistring' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_regremovemultistring') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_regremovemultistring to PUBLIC; 
+
+--Revoke Execute on 'xp_regwrite' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_regwrite') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_regwrite to PUBLIC; 
+
+--Revoke Execute on 'xp_regread' to PUBLIC 
+ select OBJECT_NAME(major_id) as 'extended_procedure', 
+        permission_name, 'PUBLIC' as 'to_principal' 
+   from sys.database_permissions 
+  where major_id = OBJECT_ID('xp_regread') 
+     AND [type] = 'EX' 
+     AND grantee_principal_id = 0 
+--Debe traer resultados null, si trae resultados ejecutar
+REVOKE EXECUTE ON xp_regread to PUBLIC; 
+
+--Server Authentication
+ xp_loginconfig 'login mode'
+ 
+--Revoke connect
+SELECT DB_NAME(), name 
+  FROM sys.database_principals 
+ WHERE name = 'guest';
+--La unica que debe tener permisos para usuario guest es la master,
+--si trae mas resultados ejecutar
+REVOKE CONNECT FROM guest;
+
+--Drop Orphaned Users From SQL Server Databases
+EXEC sp_change_users_login @Action='Report'
+--Si trae algun usuario en esta consulta ejecutar
+DROP USER <username>;
+
+--CHECK_EXPIRATION
+SELECT SQLLoginName = sp.name, 
+       PasswordExpirationEnforced = CAST(sl.is_expiration_checked AS BIT) 
+  FROM sys.server_principals sp JOIN sys.sql_logins AS sl 
+    ON sl.principal_id = sp.principal_id 
+ WHERE sp.type_desc = 'SQL_LOGIN';
+--Si hay algun usuario sin login activado ejecutar
+ALTER LOGIN [login_name] WITH CHECK_EXPIRATION = ON;
+
+--Maximum number of error log files
+USE [master]
+GO
+EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', N'Software\Microsoft\MSSQLServer\MSSQLServer', 
+N'NumErrorLogs', REG_DWORD, 12
+GO
+
+--Default trace enabled
+SELECT name, 
+       CAST(value as int) as value_configured, 
+       CAST(value_in_use as int) as value_in_use 
+  FROM sys.configurations 
+ WHERE name = 'Default trace enabled';
+ -- Si trae un valor diferente a 1 - 1
+ EXECUTE sp_configure 'show advanced options', 1; 
+ RECONFIGURE; 
+ EXECUTE sp_configure 'Default trace enabled', 1; 
+ RECONFIGURE; 
+ GO 
+ EXECUTE sp_configure 'show advanced options', 0; 
+ RECONFIGURE;
+ 
+ --Login auditing
+XP_loginconfig 'audit level';
+
+--CLR Assembly Permission Set
+SELECT name, 
+       permission_set_desc 
+  FROM sys.assemblies 
+ where is_user_defined = 1; 
+--En caso de retornar un resultado ejecutar
+ALTER ASSEMBLY assembly_name WITH PERMISSION_SET = SAFE;
