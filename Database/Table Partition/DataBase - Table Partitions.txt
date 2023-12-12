@@ -29,7 +29,7 @@ LEFT OUTER JOIN sys.partition_schemes ps ON i.data_space_id=ps.data_space_id
 LEFT OUTER JOIN sys.destination_data_spaces dds ON ps.data_space_id=dds.partition_scheme_id AND p.partition_number=dds.destination_id
 INNER JOIN sys.filegroups fg ON COALESCE(dds.data_space_id, i.data_space_id)=fg.data_space_id
 INNER JOIN sys.allocation_units b ON (p.partition_id = b.container_id)
-INNER JOIN pf ON (p.partition_number = pf.Id_Partition)
+LEFT JOIN pf ON (p.partition_number = pf.Id_Partition)
 --WHERE t.name = 'JOURNAL_SERVICES' 
 GROUP BY
 OBJECT_SCHEMA_NAME(t.object_id)
