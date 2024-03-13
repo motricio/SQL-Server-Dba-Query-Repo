@@ -65,12 +65,13 @@ SELECT
 	[A].[DB_USERS],
 	[A].[MEMBER_OF],
 	'USE ['+ [A].[DB_NAME]+']; ' +'CREATE USER ['+[A].[DB_USERS]+'] FOR LOGIN ['+[A].[DB_USERS]+']'	 as [CREATE_USER],
-	'ALTER ROLE ['+[A].[MEMBER_OF]+'] ADD MEMBER ['+[A].[DB_USERS]+']' as [ADD_USER_ROLE]
+	'ALTER ROLE ['+[A].[MEMBER_OF]+'] ADD MEMBER ['+[A].[DB_USERS]+']' as [ADD_USER_ROLE],
+	'USE ['+[A].[DB_NAME]+']; DROP USER ['+[A].[DB_USERS]+'];'  as [DROP_USER_ROLE]
 FROM 
 	@TBL_USERS AS A
 WHERE
 	[A].[DB_USERS] NOT LIKE '%dbo%'
-	--and A.DB_USERS like '%daniel.vargas%'	
+	and A.DB_USERS like '%Tatiana.Perez%'	
 ORDER BY 
 	[A].[DB_NAME]
 
