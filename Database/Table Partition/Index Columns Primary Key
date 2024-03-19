@@ -1,0 +1,16 @@
+select 
+    object_schema_name(i.object_id) as [schema],
+    object_name(i.object_id) as [object_name],
+    -- object_name(ic.column_id) as [column_id], -- t.name as [table_name],
+    i.name as [index_name],
+    COL_NAME(ic.object_id, ic.column_id) AS column_name,
+    t.name as [Column_type],
+    s.name as [partition_scheme]
+from sys.indexes i
+    join sys.partition_schemes s on i.data_space_id = s.data_space_id
+    join sys.index_columns ic on ic.object_id = i.object_id and ic.index_id = i.index_id
+    join sys.columns c on c.object_id = i.object_id and c.column_id = ic.column_id
+    join sys.types t on t.system_type_id = c.system_type_id -- and t.column_id = ic.column_id
+where i.is_primary_key = 1 
+-- and object_name(i.object_id) = 'AccountInfoForReport'
+and t.system_type_id in (40, 42,61)
