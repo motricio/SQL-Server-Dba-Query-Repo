@@ -1,23 +1,37 @@
-DECLARE cur CURSOR FAST_FORWARD FOR 
-SELECT 
-top 1
-name FROM sys.databases 
-WHERE database_id > 4 
+DECLARE @Results TABLE 
+(
+DBName SYSNAME, 
+UserName SYSNAME, 
+UserSID VARBINARY(MAX)
+)  
 
+DECLARE cur CURSOR FAST_FORWARD FOR 
+SELECT
+	d.name 
+FROM sys.databases d 
+INNER JOIN sys.dm_hadr_database_replica_states h  on (d.database_id = h.database_id)
+where 
+ 		d.database_id > 4
+	and h.is_primary_replica = 1
+	and h.is_local = 1
 OPEN cur  
 
 DECLARE @SQL NVARCHAR(MAX), @DBName SYSNAME 
-DECLARE @Results TABLE (DBName SYSNAME, UserName SYSNAME, UserSID VARBINARY(MAX))  
+
 
 FETCH NEXT FROM cur into @DBName  
 
 WHILE @@FETCH_STATUS = 0 
 BEGIN 
-	SET @SQL = 'USE [' + @DBName + ']; SELECT ''' + @DBName + ''' AS DBName, 
-			UserName = name, UserSID = sid from sysusers 
-			WHERE issqluser = 1 AND 
-				(sid IS NOT NULL AND sid <> 0x0) AND 
-				(LEN(sid) <= 16) AND SUSER_SNAME(sid) IS NULL'     
+	SET @SQL = 'USE [' + @DBName + ']; 
+				Select '''+@DBName+''' ,UserName = name, UserSID = sid 
+					from sysusers 
+				WHERE 
+					sid IS NOT NULL 
+					AND sid <> 0x0 
+					AND SUSER_SNAME(sid) IS NULL 
+					AND issqlrole = 0 
+	'
 
 	INSERT INTO @Results 
 	--print @SQL;
@@ -29,4 +43,9 @@ END
 CLOSE cur 
 DEALLOCATE cur  
 
-SELECT * FROM @Results
+SELECT 
+	DBName,
+	UserName,
+	UserSID,
+	'USE ['+DBName+']; DROP USER ['+UserName+'];' [DropUser]
+FROM @Results
