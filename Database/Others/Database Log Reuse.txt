@@ -1,39 +1,40 @@
 
 --Verificar espacio de log
 --Diagnostico
---Validar el valor de Log Reuse wait para determinar pasos a seguir si el log est· lleno.
+--Validar el valor de Log Reuse wait para determinar pasos a seguir si el log est√° lleno.
 USE MASTER;
 
+DECLARE @xp_fixeddrives TABLE (drive varchar(1),MBFree varchar(20));
 DECLARE @TSQL AS NVARCHAR(2000);
-SET @TSQL = ''
-CREATE TABLE #TBL
-	(
-		[DataBaseName] varchar(200),
-		[Log Size(MB)] decimal(32,6),
-		[Log Space used(%)] decimal(32,6),
-		[Status] varchar(5)
-	);
+DECLARE @TBL TABLE ([DataBaseName] varchar(200),[Log Size(MB)] decimal(32,6),[Log Space used(%)] decimal(32,6),[Status] varchar(5));
+
+SET @TSQL='exec xp_fixeddrives'
+INSERT INTO @xp_fixeddrives([drive],[MBFree])EXECUTE sp_executesql @TSQL;
+
 
 SET @TSQL='dbcc sqlperf(logspace)';
-	
-INSERT INTO #TBL([DataBaseName],[Log Size(MB)],[Log Space used(%)],[Status])
-EXECUTE sp_executesql @TSQL;
+INSERT INTO @TBL([DataBaseName],[Log Size(MB)],[Log Space used(%)],[Status]) EXECUTE sp_executesql @TSQL;
 
 SELECT
 	[A].[DataBaseName],
 	[A].[Log Size(MB)],
 	[A].[Log Space used(%)],
 	[A].[Status],
-	[B].[log_reuse_wait_desc]
+	[B].[log_reuse_wait_desc],
+	LEFT(C.physical_name,1) [Drive],
+	C.physical_name,
+	D.MBFree as [Drive_FreeMB]
+	--,	c.type
+	--,	A.*
 FROM 
-	#TBL AS A
+	@TBL AS A
 	INNER JOIN sys.databases B ON (A.DataBaseName = B.name)
+	INNER JOIN sys.master_files C on (b.database_id = c.database_id)
+	INNER JOIN @xp_fixeddrives D on (LEFT(C.physical_name,1) = D.drive)
+where c.type=1
 order by 
-[Log Size(MB)] desc
-DROP TABLE #TBL
+A.DataBaseName asc
 GO
-
-exec xp_fixeddrives
 
 dbcc loginfo()
 
@@ -51,7 +52,7 @@ GO
 RESTORE LOG [SPOKE_Transact] FROM DISK = 'K:\BackupTemp\' WITH NORECOVERY
 GO
 
---Verificar porcentae de EjecuciÛn comandos:
+--Verificar porcentae de Ejecuci√≥n comandos:
 
 
 SELECT
