@@ -1,0 +1,41 @@
+DECLARE @Start_date datetime,@End_date datetime,@clientApp varchar(50);
+
+SET @Start_date='2024-05-24 12:03:30.000';
+SET @End_date='2024-05-24 12:04:30.000';
+SET @clientApp='APPwfFCProcessRuleString';
+
+SELECT [Rowid]
+      ,[Rec_Created_Dt]
+      ,[Event_UTC_time]
+      ,[Event_Server_time]
+      ,[DeadlockID]
+      --,[DeadlockGraph]
+      ,[DeadlockObjects]
+	  ,[DeadlockGraph].query('event/data/value/deadlock') as XdlFile
+      ,[Victim]
+      ,[SPID]
+      ,[ProcedureName]
+      ,[LockMode]
+      ,[Code]
+      ,[ClientApp]
+      ,[HostName]
+      ,[LoginName]
+      ,[InputBuffer]
+      ,[Rec_Readted_Dt]
+      ,[IndexName]
+      ,[WaitResource]
+      ,[WaitTime]
+      ,[TransactionName]
+      ,[Status]
+      ,[LastBatchStarted]
+      ,[LastBatchCompleted]
+      ,[IsolationLevel]
+      ,[CurrentDB]
+      ,[RequestType]
+      ,[DBName]
+  FROM [dbo].[t_dba_XE_Master_TraceData_collect_DBA_DeadlockEvent]
+  where 
+clientApp=@clientApp
+and	Event_Server_time >= @Start_date
+and Event_Server_time < @End_date
+order by Event_Server_time asc
