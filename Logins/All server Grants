@@ -1,8 +1,9 @@
 DECLARE @loginname nvarchar(100);
 SELECT @loginname=name from sys.server_principals where [SID]=0x01
 
+
 SELECT 
-    [B].[class]
+		  [B].[class]
         , [B].[class_desc]
         , [B].[major_id]
         , [B].[minor_id]
@@ -15,18 +16,50 @@ SELECT
         , [A].name AS grantee_principal_name
         , [A].type_desc AS grantee_principal_type_desc
         --, [C].name AS grantor_name
-  , [C].[name] AS [owner]
+		, [C].[name] AS [owner]
         , CASE 
             WHEN [B].state = N'W'
                 THEN N'GRANT'
             ELSE [B].state_desc
             END + N' ' + [B].permission_name COLLATE SQL_Latin1_General_CP1_CI_AS + N' TO ' + QUOTENAME([A].name) AS permissionstatement
-  ,'ALTER AUTHORIZATION ON '+[B].[class_desc]+':: TO ['+@loginname+'];'
+		
 FROM 
-     sys.server_principals AS A
+		   sys.server_principals AS A
 INNER JOIN sys.server_permissions AS B ON (B.grantee_principal_id = A.principal_id)
 INNER JOIN sys.server_principals AS C ON (C.principal_id = B.grantor_principal_id)
 WHERE C.[name] <> @loginname
 ORDER BY 
-  [A].name
+	 [A].name
     ,[B].permission_name
+
+
+--	select * from sys.endpoints
+
+
+SELECT 
+   pm.class, pm.class_desc, pm.major_id, pm.minor_id, 
+   pm.grantee_principal_id, pm.grantor_principal_id, 
+   pm.[type], pm.[permission_name], pm.[state],pm.state_desc, 
+   pr.[name] AS [owner], gr.[name] AS grantee, e.[name] AS endpoint_name
+   ,'ALTER AUTHORIZATION ON '+pm.class_desc+'::['+ Cast(e.[name] collate SQL_Latin1_General_CP1_CI_AS as varchar(20))+'] TO ['+@loginname+'];' [FixOnwer]
+FROM sys.server_permissions pm 
+   JOIN sys.server_principals pr ON pm.grantor_principal_id = pr.principal_id
+   JOIN sys.server_principals gr ON pm.grantee_principal_id = gr.principal_id
+   JOIN sys.endpoints e ON pm.grantor_principal_id = e.principal_id 
+        AND pm.major_id = e.endpoint_id
+WHERE pr.[name] <> @loginname;
+
+
+
+SELECT ag.[name] AS AG_name, ag.group_id, r.replica_id, r.owner_sid, p.[name] as owner_name,
+		'ALTER AUTHORIZATION ON AVAILABILITY GROUP::['+ag.[name]+'] TO ['+@loginname+'];'
+FROM sys.availability_groups ag 
+   JOIN sys.availability_replicas r ON ag.group_id = r.group_id
+   JOIN sys.server_principals p ON r.owner_sid = p.[sid]
+WHERE p.[name] <> @loginname
+
+SELECT 
+--count(*) cnt
+name, suser_sname( owner_sid ) AS DBOwnerName, 'ALTER AUTHORIZATION ON DATABASE::['+name+'] TO [dba_admin];'
+FROM master.sys.databases
+WHERE suser_sname( owner_sid ) != 'dba_admin';
